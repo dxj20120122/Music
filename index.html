@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐索引 | Apple Music风格</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --text-color: #1d1d1f;
+            --primary-color: #fa243c;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            padding: 40px 0 20px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #fa243c, #ff2d55);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            color: #86868b;
+            margin-bottom: 30px;
+        }
+        
+        .search-container {
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 30px;
+            background-color: var(--card-bg);
+            box-shadow: var(--box-shadow);
+            padding-left: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #86868b;
+        }
+        
+        .song-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .song-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--box-shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .song-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .song-image {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 50px;
+        }
+        
+        .song-info {
+            padding: 20px;
+        }
+        
+        .song-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .song-artist {
+            font-size: 14px;
+            color: #86868b;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #86868b;
+            font-size: 18px;
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 768px) {
+            .song-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>音乐索引</h1>
+            <p class="subtitle">发现并欣赏您喜爱的音乐</p>
+        </header>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" id="searchInput" placeholder="搜索歌曲或艺术家...">
+        </div>
+        
+        <div class="song-grid" id="songGrid">
+            <!-- 歌曲卡片将通过JavaScript动态加载 -->
+        </div>
+    </div>
+
+    <script>
+        // 从外部JSON文件加载歌曲数据
+        async function loadSongs() {
+            try {
+                const response = await fetch('songs.json');
+                if (!response.ok) {
+                    throw new Error('无法加载歌曲数据');
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('加载歌曲数据时出错:', error);
+                return [];
+            }
+        }
+
+        // 显示歌曲卡片
+        function displaySongs(songs) {
+            const songGrid = document.getElementById('songGrid');
+            songGrid.innerHTML = ''; // 清空现有内容
+
+            if (songs.length === 0) {
+                songGrid.innerHTML = '<div class="no-results">没有找到匹配的歌曲</div>';
+                return;
+            }
+
+            songs.forEach(song => {
+                const card = document.createElement('div');
+                card.className = 'song-card';
+                
+                // 生成随机颜色渐变
+                const colors = [
+                    'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+                    'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+                    'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                    'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+                    'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)'
+                ];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                card.innerHTML = `
+                    <div class="song-image" style="background: ${randomColor}">
+                        ${song.title.charAt(0)}
+                    </div>
+                    <div class="song-info">
+                        <div class="song-title" title="${song.title}">${song.title}</div>
+                        <div class="song-artist">${song.artist}</div>
+                    </div>
+                `;
+                
+                // 添加点击事件，跳转到对应歌曲文件夹
+                card.addEventListener('click', () => {
+                    // 创建符合URL规范的路径（替换空格和特殊字符）
+                    const folderName = encodeURIComponent(song.title);
+                    window.location.href = `${folderName}/`;
+                });
+                
+                songGrid.appendChild(card);
+            });
+        }
+
+        // 搜索歌曲
+        function searchSongs(songs, query) {
+            if (!query) return songs;
+            
+            const lowerQuery = query.toLowerCase();
+            return songs.filter(song => 
+                song.title.toLowerCase().includes(lowerQuery) || 
+                song.artist.toLowerCase().includes(lowerQuery)
+            );
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            const allSongs = await loadSongs();
+            displaySongs(allSongs);
+            
+            // 搜索功能
+            const searchInput = document.getElementById('searchInput');
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                const filteredSongs = searchSongs(allSongs, query);
+                displaySongs(filteredSongs);
+            });
+        });
+    </script>
+</body>
+</html>
