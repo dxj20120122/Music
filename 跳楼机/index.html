@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +14,7 @@
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             height: 100vh;
             display: flex;
@@ -24,7 +25,7 @@
             overflow: hidden;
             position: relative;
         }
-        
+
         .glass-container {
             width: 95%;
             max-width: 1200px;
@@ -42,7 +43,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .album-art {
             display: flex;
             flex-direction: column;
@@ -50,7 +51,7 @@
             align-items: center;
             position: relative;
         }
-        
+
         .cover-container {
             width: 300px;
             height: 300px;
@@ -62,57 +63,62 @@
             animation: rotate 20s linear infinite;
             animation-play-state: paused;
         }
-        
+
         .cover-container.playing {
             animation-play-state: running;
         }
-        
+
         @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         .cover-image {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-        
+
         .song-info {
             text-align: center;
             margin-bottom: 20px;
         }
-        
+
         .song-title {
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 5px;
         }
-        
+
         .song-artist {
             font-size: 18px;
             opacity: 0.8;
         }
-        
+
         .controls {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
         }
-        
+
         .progress-container {
             width: 100%;
             margin-bottom: 20px;
         }
-        
+
         .time-display {
             display: flex;
             justify-content: space-between;
             margin-bottom: 5px;
             font-size: 14px;
         }
-        
+
         .progress-bar {
             width: 100%;
             height: 6px;
@@ -121,7 +127,7 @@
             cursor: pointer;
             position: relative;
         }
-        
+
         .progress {
             height: 100%;
             background: linear-gradient(to right, #ff8a00, #e52e71);
@@ -129,7 +135,7 @@
             width: 0%;
             position: relative;
         }
-        
+
         .progress::after {
             content: '';
             position: absolute;
@@ -143,18 +149,18 @@
             opacity: 0;
             transition: opacity 0.2s;
         }
-        
+
         .progress-bar:hover .progress::after {
             opacity: 1;
         }
-        
+
         .control-buttons {
             display: flex;
             align-items: center;
             gap: 25px;
             margin-bottom: 20px;
         }
-        
+
         .btn {
             background: none;
             border: none;
@@ -169,23 +175,23 @@
             height: 50px;
             border-radius: 50%;
         }
-        
+
         .btn:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
         }
-        
+
         .btn-play {
             background: rgba(255, 255, 255, 0.2);
             width: 60px;
             height: 60px;
         }
-        
+
         .btn-play:hover {
             background: rgba(255, 255, 255, 0.3);
             transform: scale(1.1);
         }
-        
+
         .volume-container {
             display: flex;
             align-items: center;
@@ -193,11 +199,11 @@
             width: 100%;
             max-width: 200px;
         }
-        
+
         .volume-icon {
             font-size: 20px;
         }
-        
+
         .volume-bar {
             flex-grow: 1;
             height: 4px;
@@ -205,14 +211,14 @@
             border-radius: 2px;
             cursor: pointer;
         }
-        
+
         .volume-progress {
             height: 100%;
             background: white;
             border-radius: 2px;
             width: 100%;
         }
-        
+
         .lyrics-container {
             display: flex;
             flex-direction: column;
@@ -221,43 +227,43 @@
             overflow: hidden;
             position: relative;
         }
-        
+
         .lyrics-title {
             font-size: 24px;
             margin-bottom: 20px;
             font-weight: 600;
         }
-        
+
         .lyrics-content {
             height: calc(100% - 50px);
             overflow-y: auto;
             scroll-behavior: smooth;
             padding-right: 15px;
         }
-        
+
         .lyrics-content::-webkit-scrollbar {
             width: 6px;
         }
-        
+
         .lyrics-content::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.3);
             border-radius: 3px;
         }
-        
+
         .lyrics-line {
             font-size: 18px;
             line-height: 2.5;
             opacity: 0.6;
             transition: all 0.3s;
         }
-        
+
         .lyrics-line.active {
             font-size: 22px;
             opacity: 1;
             font-weight: 600;
             color: #ff8a00;
         }
-        
+
         .loading {
             position: absolute;
             top: 0;
@@ -271,7 +277,7 @@
             z-index: 10;
             backdrop-filter: blur(5px);
         }
-        
+
         .spinner {
             width: 50px;
             height: 50px;
@@ -280,11 +286,13 @@
             border-top-color: white;
             animation: spin 1s ease-in-out infinite;
         }
-        
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
-        
+
         @media (max-width: 900px) {
             .glass-container {
                 grid-template-columns: 1fr;
@@ -292,23 +300,166 @@
                 max-height: 95vh;
                 padding: 20px;
             }
-            
+
             .album-art {
                 margin-bottom: 20px;
             }
-            
+
             .cover-container {
                 width: 200px;
                 height: 200px;
             }
-            
+
             .lyrics-container {
                 height: auto;
                 max-height: 40vh;
             }
         }
+
+        @media (max-width: 768px) {
+            .glass-container {
+                grid-template-columns: 1fr;
+                padding: 15px;
+                gap: 15px;
+                height: 90vh;
+            }
+
+            .album-art {
+                margin-bottom: 15px;
+            }
+
+            .cover-container {
+                width: 180px;
+                height: 180px;
+                margin-bottom: 20px;
+            }
+
+            .song-title {
+                font-size: 22px;
+            }
+
+            .song-artist {
+                font-size: 16px;
+            }
+
+            .lyrics-container {
+                max-height: 30vh;
+            }
+
+            .lyrics-title {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .lyrics-line {
+                font-size: 16px;
+                line-height: 2.2;
+            }
+
+            .lyrics-line.active {
+                font-size: 18px;
+            }
+
+            .btn {
+                width: 45px;
+                height: 45px;
+                font-size: 20px;
+            }
+
+            .btn-play {
+                width: 55px;
+                height: 55px;
+            }
+
+            .time-display {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .glass-container {
+                padding: 10px;
+                height: 85vh;
+            }
+
+            .cover-container {
+                width: 150px;
+                height: 150px;
+            }
+
+            .song-title {
+                font-size: 20px;
+            }
+
+            .song-artist {
+                font-size: 14px;
+            }
+
+            .control-buttons {
+                gap: 15px;
+            }
+
+            .btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .btn-play {
+                width: 50px;
+                height: 50px;
+            }
+
+            .lyrics-line {
+                font-size: 14px;
+                line-height: 2;
+            }
+
+            .lyrics-line.active {
+                font-size: 16px;
+            }
+
+            .lyrics-title {
+                font-size: 18px;
+            }
+
+            .progress-bar {
+                height: 4px;
+            }
+
+            .volume-container {
+                max-width: 150px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .cover-container {
+                width: 130px;
+                height: 130px;
+            }
+
+            .song-title {
+                font-size: 18px;
+            }
+
+            .control-buttons {
+                gap: 10px;
+            }
+
+            .btn {
+                width: 35px;
+                height: 35px;
+                font-size: 16px;
+            }
+
+            .btn-play {
+                width: 45px;
+                height: 45px;
+            }
+        }
     </style>
 </head>
+
 <body>
     <div class="glass-container">
         <!-- 专辑封面部分 -->
@@ -351,7 +502,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- 歌词部分 -->
         <div class="lyrics-container">
             <h2 class="lyrics-title">歌词</h2>
@@ -359,18 +510,18 @@
                 <div class="loading-message">歌词加载中...</div>
             </div>
         </div>
-        
+
         <!-- 加载状态 -->
         <div class="loading" id="loading">
             <div class="spinner"></div>
         </div>
     </div>
-    
+
     <!-- 音频元素 -->
     <audio id="audio"></audio>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // 获取DOM元素
             const audio = document.getElementById('audio');
             const btnPlay = document.getElementById('btn-play');
@@ -389,7 +540,7 @@
             const loading = document.getElementById('loading');
             const songTitle = document.getElementById('song-title');
             const songArtist = document.getElementById('song-artist');
-            
+
             // 当前歌曲索引
             let currentSongIndex = 0;
             // 歌曲列表
@@ -397,7 +548,7 @@
             // 歌词数据
             let lyrics = [];
             let lyricTimes = [];
-            
+
             // 加载歌曲数据
             fetch('songs.json')
                 .then(response => response.json())
@@ -413,33 +564,33 @@
                     console.error('加载歌曲数据失败:', error);
                     showError("加载歌曲数据失败");
                 });
-            
+
             // 加载歌曲
             function loadSong(index) {
                 if (index < 0 || index >= songs.length) return;
-                
+
                 loading.style.display = 'flex';
                 currentSongIndex = index;
                 const song = songs[index];
-                
+
                 // 更新歌曲信息
                 songTitle.textContent = song.title;
                 songArtist.textContent = song.artist;
                 coverImage.src = song.cover;
                 audio.src = song.audio;
-                
+
                 // 重置播放器状态
                 progress.style.width = '0%';
                 currentTimeEl.textContent = '00:00';
                 totalTimeEl.textContent = '00:00';
                 playIcon.classList.replace('fa-pause', 'fa-play');
                 coverContainer.classList.remove('playing');
-                
+
                 // 加载歌词
                 lyrics = [];
                 lyricTimes = [];
                 lyricsContent.innerHTML = '<div class="loading-message">歌词加载中...</div>';
-                
+
                 if (song.lyrics) {
                     fetch(song.lyrics)
                         .then(response => response.text())
@@ -457,21 +608,21 @@
                     loading.style.display = 'none';
                 }
             }
-            
+
             // 解析LRC歌词
             function parseLyrics(lrcText) {
                 const lines = lrcText.split('\n');
                 lyricsContent.innerHTML = '';
-                
+
                 lines.forEach(line => {
                     // 匹配时间标签 [mm:ss.xx]
                     const timeMatches = line.match(/\[(\d{2}):(\d{2})\.(\d{2})\]/g);
                     if (!timeMatches) return;
-                    
+
                     // 获取歌词文本
                     const text = line.replace(/\[.*?\]/g, '').trim();
                     if (!text) return;
-                    
+
                     timeMatches.forEach(timeTag => {
                         const timeMatch = timeTag.match(/\[(\d{2}):(\d{2})\.(\d{2})\]/);
                         if (timeMatch) {
@@ -479,15 +630,15 @@
                             const seconds = parseInt(timeMatch[2]);
                             const hundredths = parseInt(timeMatch[3]);
                             const time = minutes * 60 + seconds + hundredths / 100;
-                            
+
                             lyrics.push({ time, text });
                         }
                     });
                 });
-                
+
                 // 按时间排序歌词
                 lyrics.sort((a, b) => a.time - b.time);
-                
+
                 // 创建歌词DOM元素
                 lyrics.forEach((lyric, index) => {
                     const lyricLine = document.createElement('div');
@@ -496,12 +647,12 @@
                     lyricLine.dataset.index = index;
                     lyricLine.textContent = lyric.text;
                     lyricsContent.appendChild(lyricLine);
-                    
+
                     // 存储时间点用于快速查找
                     lyricTimes.push(lyric.time);
                 });
             }
-            
+
             // 更新当前高亮歌词
             function updateLyrics(currentTime) {
                 // 找到当前时间对应的歌词
@@ -513,19 +664,19 @@
                         break;
                     }
                 }
-                
+
                 // 更新歌词高亮状态
                 const lyricLines = document.querySelectorAll('.lyrics-line');
                 lyricLines.forEach((line, index) => {
                     if (index === activeIndex) {
                         line.classList.add('active');
-                        
+
                         // 滚动到当前歌词
                         const container = lyricsContent;
                         const lineTop = line.offsetTop;
                         const lineHeight = line.offsetHeight;
                         const containerHeight = container.offsetHeight;
-                        
+
                         container.scrollTo({
                             top: lineTop - containerHeight / 2 + lineHeight,
                             behavior: 'smooth'
@@ -535,14 +686,14 @@
                     }
                 });
             }
-            
+
             // 显示错误信息
             function showError(message) {
                 loading.style.display = 'none';
                 songTitle.textContent = message;
                 lyricsContent.innerHTML = `<div class="lyrics-line">${message}</div>`;
             }
-            
+
             // 播放/暂停控制
             btnPlay.addEventListener('click', () => {
                 if (audio.paused) {
@@ -561,55 +712,55 @@
                     coverContainer.classList.remove('playing');
                 }
             });
-            
+
             // 快进15秒
             btnForward.addEventListener('click', () => {
                 audio.currentTime = Math.min(audio.currentTime + 15, audio.duration);
             });
-            
+
             // 后退15秒
             btnBackward.addEventListener('click', () => {
                 audio.currentTime = Math.max(audio.currentTime - 15, 0);
             });
-            
+
             // 进度条控制
             progressBar.addEventListener('click', (e) => {
                 const percent = e.offsetX / progressBar.offsetWidth;
                 audio.currentTime = percent * audio.duration;
             });
-            
+
             // 音量控制
             volumeBar.addEventListener('click', (e) => {
                 const percent = e.offsetX / volumeBar.offsetWidth;
                 audio.volume = percent;
                 volumeProgress.style.width = `${percent * 100}%`;
             });
-            
+
             // 更新进度条
             audio.addEventListener('timeupdate', () => {
                 const currentTime = audio.currentTime;
                 const duration = audio.duration;
                 const percent = (currentTime / duration) * 100;
                 progress.style.width = `${percent}%`;
-                
+
                 // 更新时间显示
                 currentTimeEl.textContent = formatTime(currentTime);
-                
+
                 // 更新歌词
                 updateLyrics(currentTime);
             });
-            
+
             // 音频加载完成
             audio.addEventListener('loadedmetadata', () => {
                 totalTimeEl.textContent = formatTime(audio.duration);
             });
-            
+
             // 音频播放结束
             audio.addEventListener('ended', () => {
                 playIcon.classList.replace('fa-pause', 'fa-play');
                 coverContainer.classList.remove('playing');
             });
-            
+
             // 键盘快捷键
             document.addEventListener('keydown', (e) => {
                 if (e.code === 'Space') {
@@ -621,18 +772,19 @@
                     btnBackward.click();
                 }
             });
-            
+
             // 格式化时间显示 (mm:ss)
             function formatTime(seconds) {
                 const minutes = Math.floor(seconds / 60);
                 const secs = Math.floor(seconds % 60);
                 return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
             }
-            
+
             // 初始化音量
             audio.volume = 0.7;
             volumeProgress.style.width = '70%';
         });
     </script>
 </body>
+
 </html>
