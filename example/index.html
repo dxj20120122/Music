@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>音乐播放器</title>
     <!-- Font Awesome 6 图标库 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,6 +13,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -24,6 +25,7 @@
             color: white;
             overflow: hidden;
             position: relative;
+            touch-action: manipulation;
         }
 
         .glass-container {
@@ -62,6 +64,7 @@
             margin-bottom: 30px;
             animation: rotate 20s linear infinite;
             animation-play-state: paused;
+            transition: transform 0.3s ease;
         }
 
         .cover-container.playing {
@@ -87,17 +90,27 @@
         .song-info {
             text-align: center;
             margin-bottom: 20px;
+            width: 100%;
+            overflow: hidden;
         }
 
         .song-title {
             font-size: 28px;
             font-weight: 600;
             margin-bottom: 5px;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 0 10px;
         }
 
         .song-artist {
             font-size: 18px;
             opacity: 0.8;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            padding: 0 10px;
         }
 
         .controls {
@@ -134,6 +147,7 @@
             border-radius: 3px;
             width: 0%;
             position: relative;
+            transition: width 0.1s linear;
         }
 
         .progress::after {
@@ -174,11 +188,16 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
+            outline: none;
         }
 
         .btn:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: scale(1.1);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
         }
 
         .btn-play {
@@ -202,6 +221,7 @@
 
         .volume-icon {
             font-size: 20px;
+            min-width: 20px;
         }
 
         .volume-bar {
@@ -217,6 +237,7 @@
             background: white;
             border-radius: 2px;
             width: 100%;
+            transition: width 0.1s linear;
         }
 
         .lyrics-container {
@@ -239,6 +260,7 @@
             overflow-y: auto;
             scroll-behavior: smooth;
             padding-right: 15px;
+            -webkit-overflow-scrolling: touch;
         }
 
         .lyrics-content::-webkit-scrollbar {
@@ -255,6 +277,7 @@
             line-height: 2.5;
             opacity: 0.6;
             transition: all 0.3s;
+            padding: 2px 0;
         }
 
         .lyrics-line.active {
@@ -293,45 +316,66 @@
             }
         }
 
+        /* 平板布局 */
         @media (max-width: 900px) {
             .glass-container {
                 grid-template-columns: 1fr;
                 height: auto;
                 max-height: 95vh;
                 padding: 20px;
+                gap: 20px;
             }
 
             .album-art {
-                margin-bottom: 20px;
+                margin-bottom: 0;
             }
 
             .cover-container {
-                width: 200px;
-                height: 200px;
+                width: 220px;
+                height: 220px;
+                margin-bottom: 20px;
             }
 
             .lyrics-container {
                 height: auto;
                 max-height: 40vh;
             }
+
+            .song-title {
+                font-size: 24px;
+            }
+
+            .song-artist {
+                font-size: 16px;
+            }
+
+            .lyrics-title {
+                font-size: 22px;
+                margin-bottom: 15px;
+            }
+
+            .lyrics-line {
+                font-size: 16px;
+                line-height: 2.2;
+            }
+
+            .lyrics-line.active {
+                font-size: 20px;
+            }
         }
 
+        /* 大手机布局 */
         @media (max-width: 768px) {
             .glass-container {
-                grid-template-columns: 1fr;
                 padding: 15px;
                 gap: 15px;
                 height: 90vh;
             }
 
-            .album-art {
-                margin-bottom: 15px;
-            }
-
             .cover-container {
-                width: 180px;
-                height: 180px;
-                margin-bottom: 20px;
+                width: 200px;
+                height: 200px;
+                margin-bottom: 15px;
             }
 
             .song-title {
@@ -339,21 +383,20 @@
             }
 
             .song-artist {
-                font-size: 16px;
+                font-size: 15px;
             }
 
             .lyrics-container {
-                max-height: 30vh;
+                max-height: 35vh;
             }
 
             .lyrics-title {
                 font-size: 20px;
-                margin-bottom: 15px;
             }
 
             .lyrics-line {
-                font-size: 16px;
-                line-height: 2.2;
+                font-size: 15px;
+                line-height: 2;
             }
 
             .lyrics-line.active {
@@ -376,15 +419,18 @@
             }
         }
 
+        /* 小手机布局 */
         @media (max-width: 480px) {
             .glass-container {
-                padding: 10px;
+                padding: 12px;
                 height: 85vh;
+                width: 98%;
             }
 
             .cover-container {
-                width: 150px;
-                height: 150px;
+                width: 180px;
+                height: 180px;
+                margin-bottom: 12px;
             }
 
             .song-title {
@@ -400,8 +446,8 @@
             }
 
             .btn {
-                width: 40px;
-                height: 40px;
+                width: 42px;
+                height: 42px;
                 font-size: 18px;
             }
 
@@ -412,7 +458,7 @@
 
             .lyrics-line {
                 font-size: 14px;
-                line-height: 2;
+                line-height: 1.8;
             }
 
             .lyrics-line.active {
@@ -421,40 +467,116 @@
 
             .lyrics-title {
                 font-size: 18px;
+                margin-bottom: 12px;
             }
 
             .progress-bar {
-                height: 4px;
+                height: 5px;
             }
 
             .volume-container {
-                max-width: 150px;
+                max-width: 160px;
             }
         }
 
+        /* 超小手机布局 */
         @media (max-width: 360px) {
             .cover-container {
-                width: 130px;
-                height: 130px;
+                width: 150px;
+                height: 150px;
             }
 
             .song-title {
                 font-size: 18px;
             }
 
+            .song-artist {
+                font-size: 13px;
+            }
+
             .control-buttons {
-                gap: 10px;
+                gap: 12px;
             }
 
             .btn {
-                width: 35px;
-                height: 35px;
+                width: 38px;
+                height: 38px;
                 font-size: 16px;
             }
 
             .btn-play {
-                width: 45px;
-                height: 45px;
+                width: 46px;
+                height: 46px;
+            }
+
+            .lyrics-line {
+                font-size: 13px;
+            }
+
+            .lyrics-line.active {
+                font-size: 15px;
+            }
+
+            .progress-bar {
+                height: 4px;
+            }
+        }
+
+        /* 横屏模式 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .glass-container {
+                height: 98vh;
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cover-container {
+                width: 150px;
+                height: 150px;
+                margin-bottom: 10px;
+            }
+
+            .song-title {
+                font-size: 18px;
+            }
+
+            .song-artist {
+                font-size: 14px;
+            }
+
+            .lyrics-container {
+                max-height: none;
+                height: calc(100% - 30px);
+            }
+
+            .lyrics-line {
+                font-size: 14px;
+                line-height: 1.8;
+            }
+
+            .lyrics-line.active {
+                font-size: 16px;
+            }
+
+            .btn {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .btn-play {
+                width: 48px;
+                height: 48px;
+            }
+        }
+
+        /* 防止动画在低电量模式下卡顿 */
+        @media (prefers-reduced-motion: reduce) {
+            .cover-container {
+                animation: none !important;
+            }
+            
+            .lyrics-content {
+                scroll-behavior: auto;
             }
         }
     </style>
@@ -494,7 +616,7 @@
                 </div>
                 <div class="volume-container">
                     <span class="volume-icon">
-                        <i class="fas fa-volume-high"></i>
+                        <i class="fas fa-volume-high" id="volume-icon"></i>
                     </span>
                     <div class="volume-bar" id="volume-bar">
                         <div class="volume-progress" id="volume-progress"></div>
@@ -534,6 +656,7 @@
             const totalTimeEl = document.getElementById('total-time');
             const volumeBar = document.getElementById('volume-bar');
             const volumeProgress = document.getElementById('volume-progress');
+            const volumeIcon = document.getElementById('volume-icon');
             const coverContainer = document.getElementById('cover-container');
             const coverImage = document.getElementById('cover-image');
             const lyricsContent = document.getElementById('lyrics-content');
@@ -548,10 +671,21 @@
             // 歌词数据
             let lyrics = [];
             let lyricTimes = [];
+            // 是否正在拖动进度条
+            let isDraggingProgress = false;
+            // 是否正在拖动音量条
+            let isDraggingVolume = false;
+            // 保存静音前的音量
+            let lastVolume = 0.7;
 
             // 加载歌曲数据
             fetch('songs.json')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     songs = data;
                     if (songs.length > 0) {
@@ -576,7 +710,7 @@
                 // 更新歌曲信息
                 songTitle.textContent = song.title;
                 songArtist.textContent = song.artist;
-                coverImage.src = song.cover;
+                coverImage.src = song.cover || 'https://via.placeholder.com/300';
                 audio.src = song.audio;
 
                 // 重置播放器状态
@@ -593,7 +727,12 @@
 
                 if (song.lyrics) {
                     fetch(song.lyrics)
-                        .then(response => response.text())
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('歌词加载失败');
+                            }
+                            return response.text();
+                        })
                         .then(text => {
                             parseLyrics(text);
                             loading.style.display = 'none';
@@ -607,6 +746,16 @@
                     lyricsContent.innerHTML = '<div class="lyrics-line">暂无歌词</div>';
                     loading.style.display = 'none';
                 }
+
+                // 预加载下一首歌的封面
+                if (songs.length > 1) {
+                    const nextIndex = (index + 1) % songs.length;
+                    const nextSong = songs[nextIndex];
+                    if (nextSong.cover) {
+                        const img = new Image();
+                        img.src = nextSong.cover;
+                    }
+                }
             }
 
             // 解析LRC歌词
@@ -615,8 +764,8 @@
                 lyricsContent.innerHTML = '';
 
                 lines.forEach(line => {
-                    // 匹配时间标签 [mm:ss.xx]
-                    const timeMatches = line.match(/\[(\d{2}):(\d{2})\.(\d{2})\]/g);
+                    // 匹配时间标签 [mm:ss.xx] 或 [mm:ss]
+                    const timeMatches = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]/g);
                     if (!timeMatches) return;
 
                     // 获取歌词文本
@@ -624,11 +773,11 @@
                     if (!text) return;
 
                     timeMatches.forEach(timeTag => {
-                        const timeMatch = timeTag.match(/\[(\d{2}):(\d{2})\.(\d{2})\]/);
+                        const timeMatch = timeTag.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]/);
                         if (timeMatch) {
                             const minutes = parseInt(timeMatch[1]);
                             const seconds = parseInt(timeMatch[2]);
-                            const hundredths = parseInt(timeMatch[3]);
+                            const hundredths = timeMatch[3] ? parseInt(timeMatch[3]) : 0;
                             const time = minutes * 60 + seconds + hundredths / 100;
 
                             lyrics.push({ time, text });
@@ -695,59 +844,228 @@
             }
 
             // 播放/暂停控制
-            btnPlay.addEventListener('click', () => {
+            function togglePlay() {
                 if (audio.paused) {
                     audio.play()
                         .then(() => {
                             playIcon.classList.replace('fa-play', 'fa-pause');
                             coverContainer.classList.add('playing');
+                            // 添加到最近播放列表
+                            addToRecentlyPlayed(songs[currentSongIndex]);
                         })
                         .catch(error => {
                             console.error('播放失败:', error);
-                            alert('播放失败，请检查音频文件');
+                            showToast('播放失败，请检查音频文件');
                         });
                 } else {
                     audio.pause();
                     playIcon.classList.replace('fa-pause', 'fa-play');
                     coverContainer.classList.remove('playing');
                 }
-            });
+            }
+
+            // 添加到最近播放列表
+            function addToRecentlyPlayed(song) {
+                // 这里可以添加逻辑将歌曲保存到本地存储或发送到服务器
+                console.log('最近播放:', song.title);
+            }
+
+            // 显示提示信息
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.textContent = message;
+                toast.style.position = 'fixed';
+                toast.style.bottom = '20px';
+                toast.style.left = '50%';
+                toast.style.transform = 'translateX(-50%)';
+                toast.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                toast.style.color = 'white';
+                toast.style.padding = '10px 20px';
+                toast.style.borderRadius = '5px';
+                toast.style.zIndex = '1000';
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                document.body.appendChild(toast);
+                
+                // 触发动画
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                }, 10);
+                
+                // 3秒后消失
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
 
             // 快进15秒
             btnForward.addEventListener('click', () => {
                 audio.currentTime = Math.min(audio.currentTime + 15, audio.duration);
+                showToast('前进15秒');
             });
 
             // 后退15秒
             btnBackward.addEventListener('click', () => {
                 audio.currentTime = Math.max(audio.currentTime - 15, 0);
+                showToast('后退15秒');
             });
 
-            // 进度条控制
+            // 进度条控制 - 鼠标/触摸事件
+            progressBar.addEventListener('mousedown', startDragProgress);
+            progressBar.addEventListener('touchstart', startDragProgress);
+            
+            function startDragProgress(e) {
+                isDraggingProgress = true;
+                updateProgress(e);
+                
+                document.addEventListener('mousemove', updateProgress);
+                document.addEventListener('touchmove', updateProgress);
+                document.addEventListener('mouseup', endDragProgress);
+                document.addEventListener('touchend', endDragProgress);
+                
+                // 防止触摸事件触发页面滚动
+                e.preventDefault();
+            }
+            
+            function updateProgress(e) {
+                if (!isDraggingProgress) return;
+                
+                const rect = progressBar.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let percent = (clientX - rect.left) / rect.width;
+                percent = Math.max(0, Math.min(1, percent));
+                
+                progress.style.width = `${percent * 100}%`;
+                audio.currentTime = percent * audio.duration;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+                
+                // 更新歌词显示
+                updateLyrics(audio.currentTime);
+            }
+            
+            function endDragProgress() {
+                isDraggingProgress = false;
+                document.removeEventListener('mousemove', updateProgress);
+                document.removeEventListener('touchmove', updateProgress);
+                document.removeEventListener('mouseup', endDragProgress);
+                document.removeEventListener('touchend', endDragProgress);
+            }
+
+            // 点击进度条
             progressBar.addEventListener('click', (e) => {
                 const percent = e.offsetX / progressBar.offsetWidth;
                 audio.currentTime = percent * audio.duration;
             });
 
-            // 音量控制
+            // 音量控制 - 鼠标/触摸事件
+            volumeBar.addEventListener('mousedown', startDragVolume);
+            volumeBar.addEventListener('touchstart', startDragVolume);
+            
+            function startDragVolume(e) {
+                isDraggingVolume = true;
+                updateVolume(e);
+                
+                document.addEventListener('mousemove', updateVolume);
+                document.addEventListener('touchmove', updateVolume);
+                document.addEventListener('mouseup', endDragVolume);
+                document.addEventListener('touchend', endDragVolume);
+                
+                // 防止触摸事件触发页面滚动
+                e.preventDefault();
+            }
+            
+            function updateVolume(e) {
+                if (!isDraggingVolume) return;
+                
+                const rect = volumeBar.getBoundingClientRect();
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                let percent = (clientX - rect.left) / rect.width;
+                percent = Math.max(0, Math.min(1, percent));
+                
+                audio.volume = percent;
+                volumeProgress.style.width = `${percent * 100}%`;
+                
+                // 更新音量图标
+                updateVolumeIcon(percent);
+                
+                // 如果之前是静音状态，取消静音
+                if (audio.muted && percent > 0) {
+                    audio.muted = false;
+                    volumeIcon.classList.replace('fa-volume-xmark', 'fa-volume-high');
+                }
+                
+                // 保存音量
+                lastVolume = percent;
+            }
+            
+            function endDragVolume() {
+                isDraggingVolume = false;
+                document.removeEventListener('mousemove', updateVolume);
+                document.removeEventListener('touchmove', updateVolume);
+                document.removeEventListener('mouseup', endDragVolume);
+                document.removeEventListener('touchend', endDragVolume);
+            }
+
+            // 点击音量条
             volumeBar.addEventListener('click', (e) => {
                 const percent = e.offsetX / volumeBar.offsetWidth;
                 audio.volume = percent;
                 volumeProgress.style.width = `${percent * 100}%`;
+                updateVolumeIcon(percent);
+                lastVolume = percent;
+                
+                // 如果之前是静音状态，取消静音
+                if (audio.muted && percent > 0) {
+                    audio.muted = false;
+                    volumeIcon.classList.replace('fa-volume-xmark', 'fa-volume-high');
+                }
+            });
+
+            // 更新音量图标
+            function updateVolumeIcon(volume) {
+                if (volume <= 0) {
+                    volumeIcon.className = 'fas fa-volume-xmark';
+                } else if (volume < 0.3) {
+                    volumeIcon.className = 'fas fa-volume-low';
+                } else if (volume < 0.7) {
+                    volumeIcon.className = 'fas fa-volume-off';
+                } else {
+                    volumeIcon.className = 'fas fa-volume-high';
+                }
+            }
+
+            // 音量图标点击 - 静音/取消静音
+            volumeIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                if (audio.muted) {
+                    audio.muted = false;
+                    audio.volume = lastVolume;
+                    volumeProgress.style.width = `${lastVolume * 100}%`;
+                    updateVolumeIcon(lastVolume);
+                } else {
+                    audio.muted = true;
+                    volumeIcon.className = 'fas fa-volume-xmark';
+                }
             });
 
             // 更新进度条
             audio.addEventListener('timeupdate', () => {
-                const currentTime = audio.currentTime;
-                const duration = audio.duration;
-                const percent = (currentTime / duration) * 100;
-                progress.style.width = `${percent}%`;
+                if (!isDraggingProgress) {
+                    const currentTime = audio.currentTime;
+                    const duration = audio.duration;
+                    const percent = (currentTime / duration) * 100;
+                    progress.style.width = `${percent}%`;
 
-                // 更新时间显示
-                currentTimeEl.textContent = formatTime(currentTime);
+                    // 更新时间显示
+                    currentTimeEl.textContent = formatTime(currentTime);
 
-                // 更新歌词
-                updateLyrics(currentTime);
+                    // 更新歌词
+                    updateLyrics(currentTime);
+                }
             });
 
             // 音频加载完成
@@ -759,22 +1077,91 @@
             audio.addEventListener('ended', () => {
                 playIcon.classList.replace('fa-pause', 'fa-play');
                 coverContainer.classList.remove('playing');
+                
+                // 自动播放下一首
+                if (songs.length > 1) {
+                    currentSongIndex = (currentSongIndex + 1) % songs.length;
+                    loadSong(currentSongIndex);
+                    setTimeout(() => {
+                        audio.play().catch(error => {
+                            console.error('自动播放失败:', error);
+                        });
+                    }, 500);
+                }
+            });
+
+            // 音频错误处理
+            audio.addEventListener('error', () => {
+                showError('音频加载失败');
+                loading.style.display = 'none';
+            });
+
+            // 封面图片错误处理
+            coverImage.addEventListener('error', () => {
+                coverImage.src = 'https://via.placeholder.com/300';
             });
 
             // 键盘快捷键
             document.addEventListener('keydown', (e) => {
                 if (e.code === 'Space') {
                     e.preventDefault();
-                    btnPlay.click();
+                    togglePlay();
                 } else if (e.code === 'ArrowRight') {
                     btnForward.click();
                 } else if (e.code === 'ArrowLeft') {
                     btnBackward.click();
+                } else if (e.code === 'ArrowUp') {
+                    // 增加音量
+                    audio.volume = Math.min(audio.volume + 0.1, 1);
+                    volumeProgress.style.width = `${audio.volume * 100}%`;
+                    updateVolumeIcon(audio.volume);
+                    lastVolume = audio.volume;
+                    if (audio.muted) {
+                        audio.muted = false;
+                    }
+                } else if (e.code === 'ArrowDown') {
+                    // 减小音量
+                    audio.volume = Math.max(audio.volume - 0.1, 0);
+                    volumeProgress.style.width = `${audio.volume * 100}%`;
+                    updateVolumeIcon(audio.volume);
+                    lastVolume = audio.volume;
+                } else if (e.code === 'KeyM') {
+                    // 静音/取消静音
+                    audio.muted = !audio.muted;
+                    if (audio.muted) {
+                        volumeIcon.className = 'fas fa-volume-xmark';
+                    } else {
+                        updateVolumeIcon(audio.volume);
+                    }
                 }
             });
 
+            // 播放按钮点击
+            btnPlay.addEventListener('click', togglePlay);
+
+            // 双击封面暂停/播放
+            coverContainer.addEventListener('dblclick', togglePlay);
+
+            // 触摸设备支持
+            let lastTouchTime = 0;
+            coverContainer.addEventListener('touchend', (e) => {
+                const currentTime = new Date().getTime();
+                if (currentTime - lastTouchTime < 300) {
+                    // 双击处理
+                    togglePlay();
+                    e.preventDefault();
+                }
+                lastTouchTime = currentTime;
+            });
+
+            // 防止双击缩放
+            document.addEventListener('dblclick', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+
             // 格式化时间显示 (mm:ss)
             function formatTime(seconds) {
+                if (isNaN(seconds)) return '00:00';
                 const minutes = Math.floor(seconds / 60);
                 const secs = Math.floor(seconds % 60);
                 return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
@@ -783,6 +1170,24 @@
             // 初始化音量
             audio.volume = 0.7;
             volumeProgress.style.width = '70%';
+            updateVolumeIcon(0.7);
+            
+            // 检测网络状态
+            window.addEventListener('online', () => {
+                showToast('网络已连接');
+            });
+            
+            window.addEventListener('offline', () => {
+                showToast('网络已断开，部分功能可能受限');
+            });
+            
+            // 添加到主屏幕提示 (仅iOS)
+            let deferredPrompt;
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                showToast('点击分享按钮可添加到主屏幕');
+            });
         });
     </script>
 </body>

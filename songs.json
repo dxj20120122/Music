@@ -1,10 +1,14 @@
 [
     {
         "title": "越来越不懂",
-        "artist": "蔡健雅"
+        "artist": "蔡健雅",
+        "songPath":"越来越不懂/越来越不懂-蔡健雅.mp3",
+        "lyricsPath":"越来越不懂-蔡健雅.lrc"
     },
     {
         "title": "跳楼机",
-        "artist": "LBI利比（时柏尘）"
+        "artist": "LBI利比（时柏尘）",
+        "songPath":"跳楼机/跳楼机 - LBI利比（时柏尘）.mp3",
+        "lyricsPath":"跳楼机/跳楼机-LBI利比（时柏尘）.lrc"
     }
 ]

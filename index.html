@@ -3,15 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音乐索引 | Apple Music风格</title>
+    <title>Simple - 免费音乐</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg-color: #f5f5f7;
             --text-color: #1d1d1f;
             --primary-color: #fa243c;
+            --secondary-color: #86868b;
             --card-bg: #ffffff;
             --border-radius: 12px;
             --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --text-color: #f5f5f7;
+            --secondary-color: #a1a1a6;
+            --card-bg: #1e1e1e;
+            --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
         
         * {
@@ -24,13 +35,14 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            line-height: 1.5;
+            line-height: 1.6;
             padding: 0;
             margin: 0;
+            transition: background-color 0.3s ease;
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -38,21 +50,41 @@
         header {
             padding: 40px 0 20px;
             text-align: center;
+            position: relative;
         }
         
         h1 {
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 700;
             margin-bottom: 10px;
             background: linear-gradient(90deg, #fa243c, #ff2d55);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
         }
         
         .subtitle {
             font-size: 18px;
-            color: #86868b;
+            color: var(--secondary-color);
             margin-bottom: 30px;
+            font-weight: 400;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .theme-toggle:hover {
+            color: var(--primary-color);
+            transform: rotate(30deg);
         }
         
         .search-container {
@@ -69,12 +101,13 @@
             background-color: var(--card-bg);
             box-shadow: var(--box-shadow);
             padding-left: 50px;
-            transition: all 0.3s ease;
+            transition: var(--transition);
+            color: var(--text-color);
         }
         
         .search-input:focus {
             outline: none;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
         
         .search-icon {
@@ -82,13 +115,13 @@
             left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            color: #86868b;
+            color: var(--secondary-color);
         }
         
         .song-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
             margin-top: 30px;
         }
         
@@ -97,24 +130,66 @@
             border-radius: var(--border-radius);
             overflow: hidden;
             box-shadow: var(--box-shadow);
-            transition: all 0.3s ease;
+            transition: var(--transition);
             cursor: pointer;
+            position: relative;
         }
         
         .song-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
         }
         
         .song-image {
             width: 100%;
-            height: 250px;
+            height: 280px;
             background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 50px;
+            font-size: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .song-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
+        }
+        
+        .play-button {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: var(--transition);
+            z-index: 2;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .song-card:hover .play-button {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .play-button:hover {
+            transform: scale(1.1);
         }
         
         .song-info {
@@ -132,24 +207,159 @@
         
         .song-artist {
             font-size: 14px;
-            color: #86868b;
+            color: var(--secondary-color);
+            margin-bottom: 8px;
         }
         
         .no-results {
             text-align: center;
             padding: 50px;
-            color: #86868b;
+            color: var(--secondary-color);
             font-size: 18px;
             grid-column: 1 / -1;
         }
         
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            grid-column: 1 / -1;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .audio-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: var(--card-bg);
+            box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 100;
+        }
+        
+        .audio-player.active {
+            transform: translateY(0);
+        }
+        
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .player-title {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .player-artist {
+            font-size: 14px;
+            color: var(--secondary-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .player-button {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .player-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .player-progress {
+            flex: 2;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 2px;
+        }
+        
+        .time-display {
+            font-size: 12px;
+            color: var(--secondary-color);
+            min-width: 40px;
+            text-align: center;
+        }
+        
         @media (max-width: 768px) {
             .song-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             }
             
             h1 {
-                font-size: 28px;
+                font-size: 32px;
+            }
+            
+            .audio-player {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            
+            .player-info {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .player-progress {
+                width: 100%;
             }
         }
     </style>
@@ -157,48 +367,101 @@
 <body>
     <div class="container">
         <header>
-            <h1>音乐索引</h1>
-            <p class="subtitle">发现并欣赏您喜爱的音乐</p>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+            <h1>Simple - 免费音乐</h1>
         </header>
         
         <div class="search-container">
-            <span class="search-icon">🔍</span>
+            <span class="search-icon"><i class="fas fa-search"></i></span>
             <input type="text" class="search-input" id="searchInput" placeholder="搜索歌曲或艺术家...">
         </div>
         
         <div class="song-grid" id="songGrid">
-            <!-- 歌曲卡片将通过JavaScript动态加载 -->
+            <div class="loading">
+                <div class="spinner"></div>
+            </div>
         </div>
     </div>
 
+    <div class="audio-player" id="audioPlayer">
+        <div class="player-info">
+            <div class="player-title" id="playerTitle">未选择歌曲</div>
+            <div class="player-artist" id="playerArtist"></div>
+        </div>
+        
+        <div class="player-controls">
+            <button class="player-button" id="prevButton">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="player-button" id="playButton">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="player-button" id="nextButton">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+        
+        <div class="player-progress">
+            <span class="time-display" id="currentTime">0:00</span>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="time-display" id="duration">0:00</span>
+        </div>
+        
+        <audio id="audioElement"></audio>
+    </div>
+
     <script>
-        // 从外部JSON文件加载歌曲数据
+        // 从songs.json加载歌曲数据
         async function loadSongs() {
             try {
                 const response = await fetch('songs.json');
                 if (!response.ok) {
                     throw new Error('无法加载歌曲数据');
                 }
-                return await response.json();
+                const songs = await response.json();
+                
+                // 为每首歌添加ID和获取文件夹名
+                return songs.map((song, index) => {
+                    // 从songPath提取文件夹名（第一个路径部分）
+                    const folderName = song.songPath.split('/')[0];
+                    return {
+                        ...song,
+                        id: index + 1,
+                        folderName: folderName
+                    };
+                });
             } catch (error) {
                 console.error('加载歌曲数据时出错:', error);
                 return [];
             }
         }
 
+        // 格式化时间为分钟:秒
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
         // 显示歌曲卡片
         function displaySongs(songs) {
             const songGrid = document.getElementById('songGrid');
-            songGrid.innerHTML = ''; // 清空现有内容
-
+            
             if (songs.length === 0) {
                 songGrid.innerHTML = '<div class="no-results">没有找到匹配的歌曲</div>';
                 return;
             }
 
+            songGrid.innerHTML = '';
+            
             songs.forEach(song => {
                 const card = document.createElement('div');
                 card.className = 'song-card';
+                card.dataset.id = song.id;
                 
                 // 生成随机颜色渐变
                 const colors = [
@@ -206,13 +469,18 @@
                     'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
                     'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
                     'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
-                    'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)'
+                    'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)',
+                    'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)',
+                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
                 ];
                 const randomColor = colors[Math.floor(Math.random() * colors.length)];
                 
                 card.innerHTML = `
                     <div class="song-image" style="background: ${randomColor}">
                         ${song.title.charAt(0)}
+                        <button class="play-button">
+                            <i class="fas fa-play"></i>
+                        </button>
                     </div>
                     <div class="song-info">
                         <div class="song-title" title="${song.title}">${song.title}</div>
@@ -220,14 +488,78 @@
                     </div>
                 `;
                 
-                // 添加点击事件，跳转到对应歌曲文件夹
+                // 添加点击事件，播放歌曲预览
+                const playBtn = card.querySelector('.play-button');
+                playBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    playSong(song);
+                });
+                
+                // 点击卡片跳转到歌曲目录
                 card.addEventListener('click', () => {
-                    // 创建符合URL规范的路径（替换空格和特殊字符）
-                    const folderName = encodeURIComponent(song.title);
-                    window.location.href = `${folderName}/`;
+                    window.location.href = `${song.folderName}/`;
                 });
                 
                 songGrid.appendChild(card);
+            });
+        }
+
+        // 播放歌曲预览
+        function playSong(song) {
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioElement = document.getElementById('audioElement');
+            const playerTitle = document.getElementById('playerTitle');
+            const playerArtist = document.getElementById('playerArtist');
+            const playButton = document.getElementById('playButton');
+            
+            // 设置播放器信息
+            playerTitle.textContent = song.title;
+            playerArtist.textContent = song.artist;
+            
+            // 设置音频源
+            audioElement.src = song.songPath;
+            
+            // 显示播放器
+            audioPlayer.classList.add('active');
+            
+            // 播放音乐
+            audioElement.play()
+                .then(() => {
+                    playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                })
+                .catch(error => {
+                    console.error('播放失败:', error);
+                    alert('无法播放歌曲，请检查文件路径');
+                });
+            
+            // 更新进度条
+            updateProgressBar();
+        }
+
+        // 更新进度条
+        function updateProgressBar() {
+            const audioElement = document.getElementById('audioElement');
+            const progressFill = document.getElementById('progressFill');
+            const currentTimeDisplay = document.getElementById('currentTime');
+            const durationDisplay = document.getElementById('duration');
+            
+            // 设置总时长
+            audioElement.addEventListener('loadedmetadata', () => {
+                durationDisplay.textContent = formatTime(audioElement.duration);
+            });
+            
+            // 更新进度
+            audioElement.addEventListener('timeupdate', () => {
+                const progress = (audioElement.currentTime / audioElement.duration) * 100;
+                progressFill.style.width = `${progress}%`;
+                currentTimeDisplay.textContent = formatTime(audioElement.currentTime);
+            });
+            
+            // 点击进度条跳转
+            const progressBar = document.getElementById('progressBar');
+            progressBar.addEventListener('click', (e) => {
+                const percent = e.offsetX / progressBar.offsetWidth;
+                audioElement.currentTime = percent * audioElement.duration;
             });
         }
 
@@ -242,9 +574,62 @@
             );
         }
 
+        // 切换主题
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.getElementById('themeToggle').querySelector('i');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // 初始化播放器控制
+        function initPlayerControls() {
+            const audioElement = document.getElementById('audioElement');
+            const playButton = document.getElementById('playButton');
+            
+            // 播放/暂停
+            playButton.addEventListener('click', () => {
+                if (audioElement.paused) {
+                    audioElement.play()
+                        .then(() => {
+                            playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                        })
+                        .catch(error => {
+                            console.error('播放失败:', error);
+                        });
+                } else {
+                    audioElement.pause();
+                    playButton.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            });
+            
+            // 歌曲结束事件
+            audioElement.addEventListener('ended', () => {
+                playButton.innerHTML = '<i class="fas fa-play"></i>';
+            });
+        }
+
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', async function() {
+            // 初始化主题
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const themeIcon = document.getElementById('themeToggle').querySelector('i');
+            themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+            
+            // 加载歌曲数据
             const allSongs = await loadSongs();
+            
+            // 初始化播放器控制
+            initPlayerControls();
+            
+            // 显示所有歌曲
             displaySongs(allSongs);
             
             // 搜索功能
