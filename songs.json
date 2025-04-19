@@ -10,5 +10,17 @@
         "artist": "LBI利比（时柏尘）",
         "songPath":"跳楼机/跳楼机 - LBI利比（时柏尘）.mp3",
         "lyricsPath":"跳楼机/跳楼机-LBI利比（时柏尘）.lrc"
+    },
+    {
+        "title": "小美满",
+        "artist": "周深",
+        "songPath":"小美满/小美满-周深.mp3",
+        "lyricsPath":"小美满/小美满-周深.lrc"
+    },
+    {
+        "title": "青花瓷",
+        "artist": "周杰伦",
+        "songPath":"青花瓷/青花瓷-周杰伦.mp3",
+        "lyricsPath":"青花瓷/青花瓷-周杰伦.lrc"
     }
 ]

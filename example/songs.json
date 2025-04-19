@@ -1,10 +1,10 @@
 [
     {
-        "id": 1,  //索引 ID
-        "title": "", //歌曲名字
-        "artist": "", //作曲家
-        "cover": "", //专辑封面
-        "audio": "", //音乐文件路径
-        "lyrics": "" //歌词文件路径
+        "id": ,
+        "title": "",
+        "artist": "",
+        "cover": "",
+        "audio": "",
+        "lyrics": ""
     }
 ]
