@@ -5,24 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple - 免费音乐</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <style>
         :root {
-            --bg-color: #f5f5f7;
-            --text-color: #1d1d1f;
-            --primary-color: #fa243c;
-            --secondary-color: #86868b;
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --primary-color: #5d5dff;
+            --primary-hover: #4b4acf;
+            --secondary-color: #6c757d;
             --card-bg: #ffffff;
-            --border-radius: 12px;
-            --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            --border-radius: 16px;
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --accent-gradient: linear-gradient(135deg, #5d5dff 0%, #6b46c1 100%);
         }
         
         [data-theme="dark"] {
             --bg-color: #121212;
-            --text-color: #f5f5f7;
-            --secondary-color: #a1a1a6;
+            --text-color: #f8f9fa;
+            --secondary-color: #adb5bd;
             --card-bg: #1e1e1e;
-            --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
         * {
@@ -32,23 +35,29 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
             padding: 0;
             margin: 0;
             transition: background-color 0.3s ease;
+            overflow-x: hidden;
+        }
+        
+        ::selection {
+            background-color: var(--primary-color);
+            color: white;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 30px;
         }
         
         header {
-            padding: 40px 0 20px;
+            padding: 40px 0 30px;
             text-align: center;
             position: relative;
         }
@@ -56,11 +65,12 @@
         h1 {
             font-size: 42px;
             font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #fa243c, #ff2d55);
+            margin-bottom: 15px;
+            background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
+            animation: fadeIn 1s ease-out;
         }
         
         .subtitle {
@@ -68,61 +78,87 @@
             color: var(--secondary-color);
             margin-bottom: 30px;
             font-weight: 400;
+            animation: fadeIn 1.2s ease-out;
         }
         
-        .theme-toggle {
+        .header-actions {
             position: absolute;
             top: 20px;
             right: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-button {
             background: none;
             border: none;
             color: var(--secondary-color);
             font-size: 20px;
             cursor: pointer;
             transition: var(--transition);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .theme-toggle:hover {
+        .action-button:hover {
             color: var(--primary-color);
-            transform: rotate(30deg);
+            background-color: rgba(93, 93, 255, 0.1);
+            transform: translateY(-3px);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .search-container {
             margin: 30px 0;
             position: relative;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeIn 1.4s ease-out;
         }
         
         .search-input {
             width: 100%;
-            padding: 15px 20px;
+            padding: 18px 20px;
             font-size: 16px;
             border: none;
             border-radius: 30px;
             background-color: var(--card-bg);
             box-shadow: var(--box-shadow);
-            padding-left: 50px;
+            padding-left: 55px;
             transition: var(--transition);
             color: var(--text-color);
+            font-family: inherit;
         }
         
         .search-input:focus {
             outline: none;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 30px rgba(93, 93, 255, 0.15);
+            transform: translateY(-2px);
         }
         
         .search-icon {
             position: absolute;
-            left: 20px;
+            left: 22px;
             top: 50%;
             transform: translateY(-50%);
             color: var(--secondary-color);
+            font-size: 18px;
         }
         
         .song-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-top: 30px;
+            gap: 30px;
+            margin-top: 40px;
+            animation: fadeIn 1.6s ease-out;
         }
         
         .song-card {
@@ -133,17 +169,18 @@
             transition: var(--transition);
             cursor: pointer;
             position: relative;
+            border: 1px solid rgba(0, 0, 0, 0.03);
         }
         
         .song-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(93, 93, 255, 0.1);
         }
         
         .song-image {
             width: 100%;
             height: 280px;
-            background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+            background: var(--accent-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -151,6 +188,7 @@
             font-size: 60px;
             position: relative;
             overflow: hidden;
+            font-weight: 600;
         }
         
         .song-image::after {
@@ -160,7 +198,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
+            background: linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.2) 100%);
         }
         
         .play-button {
@@ -181,6 +219,73 @@
             z-index: 2;
             border: none;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(93, 93, 255, 0.3);
+        }
+        
+        .favorite-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: transparent;
+            -webkit-text-stroke: 1.5px var(--primary-color);
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: var(--transition);
+            z-index: 2;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .favorite-button, .play-button {
+                opacity: 1 !important;
+                transform: translateY(0) !important;
+            }
+        }
+        
+        .song-card:hover .favorite-button {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .favorite-button.favorited {
+            color: var(--primary-color);
+            background-color: rgba(255, 255, 255, 0.95);
+            -webkit-text-stroke: 0;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            box-shadow: var(--box-shadow);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            animation: toastIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes toastIn {
+            0% { transform: translate(-50%, -20px); opacity: 0; }
+            100% { transform: translate(-50%, 0); opacity: 1; }
         }
         
         .song-card:hover .play-button {
@@ -190,6 +295,196 @@
         
         .play-button:hover {
             transform: scale(1.1);
+            background-color: var(--primary-hover);
+        }
+        
+        /* 收藏弹窗样式 */
+        .favorites-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .favorites-modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .favorites-content {
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        
+        .favorites-modal.active .favorites-content {
+            transform: translateY(0);
+        }
+        
+        .favorites-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .favorites-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 20px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .close-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--primary-color);
+        }
+        
+        .favorites-list {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(80vh - 80px);
+        }
+        
+        .favorite-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            transition: var(--transition);
+            cursor: pointer;
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .favorite-item:hover {
+            background-color: rgba(93, 93, 255, 0.05);
+            transform: translateX(5px);
+        }
+        
+        .favorite-item-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .favorite-item-info {
+            flex: 1;
+        }
+        
+        .favorite-item-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--text-color);
+        }
+        
+        .favorite-item-artist {
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+        
+        .favorite-item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .favorite-action-button {
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 16px;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+        
+        .favorite-action-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--primary-color);
+        }
+        
+        .favorites-empty {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        
+        .favorites-empty i {
+            font-size: 50px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .favorites-empty p {
+            font-size: 18px;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+        
+        .explore-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .explore-button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(93, 93, 255, 0.2);
         }
         
         .song-info {
@@ -341,10 +636,28 @@
         @media (max-width: 768px) {
             .song-grid {
                 grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 20px;
             }
             
             h1 {
                 font-size: 32px;
+            }
+            
+            .subtitle {
+                font-size: 16px;
+            }
+            
+            .search-container {
+                margin: 20px 0;
+            }
+            
+            .search-input {
+                padding: 15px 20px;
+                padding-left: 50px;
+            }
+            
+            .song-image {
+                height: 200px;
             }
             
             .audio-player {
@@ -362,15 +675,67 @@
                 width: 100%;
             }
         }
+        
+        @media (max-width: 480px) {
+            .song-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .subtitle {
+                font-size: 14px;
+            }
+            
+            .header-actions {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .action-button {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            header {
+                padding: 30px 0 20px;
+            }
+            
+            .song-image {
+                height: 180px;
+            }
+            
+            .song-title {
+                font-size: 16px;
+            }
+            
+            .song-artist {
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <button class="theme-toggle" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
+            <div class="header-actions">
+                <button class="action-button" id="favoritesButton" title="我的收藏">
+                    <i class="fas fa-heart"></i>
+                </button>
+                <button class="action-button" id="themeToggle" title="切换主题">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
             <h1>Simple - 免费音乐</h1>
+            <p class="subtitle">发现、收藏、聆听你喜爱的音乐</p>
         </header>
         
         <div class="search-container">
@@ -384,7 +749,29 @@
             </div>
         </div>
     </div>
-
+    
+    <div class="toast" id="toast"></div>
+    
+    <!-- 收藏弹窗 -->
+    <div class="favorites-modal" id="favoritesModal">
+        <div class="favorites-content">
+            <div class="favorites-header">
+                <h2>我的收藏</h2>
+                <button class="close-button" id="closeFavoritesModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="favorites-list" id="favoritesList">
+                <!-- 收藏列表将通过JavaScript动态生成 -->
+            </div>
+            <div class="favorites-empty" id="favoritesEmpty">
+                <i class="fas fa-heart-broken"></i>
+                <p>暂无收藏歌曲</p>
+                <button class="explore-button" id="exploreSongs">去发现音乐</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="audio-player" id="audioPlayer">
         <div class="player-info">
             <div class="player-title" id="playerTitle">未选择歌曲</div>
@@ -497,6 +884,9 @@
                         <button class="play-button">
                             <i class="fas fa-play"></i>
                         </button>
+                        <button class="favorite-button" data-id="${song.id}">
+                            <i class="fas fa-heart"></i>
+                        </button>
                     </div>
                     <div class="song-info">
                         <div class="song-title" title="${song.title}">${song.title}</div>
@@ -509,6 +899,40 @@
                 playBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     playSong(song);
+                });
+                
+                // 添加收藏按钮点击事件
+                const favoriteBtn = card.querySelector('.favorite-button');
+                
+                // 从localStorage加载收藏状态
+                const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+                if (favorites[song.id]) {
+                    favoriteBtn.classList.add('favorited');
+                    favoriteBtn.querySelector('i').style.color = 'var(--primary-color)';
+                    favoriteBtn.querySelector('i').style.webkitTextStroke = '0';
+                }
+                
+                favoriteBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const isFavorited = favoriteBtn.classList.toggle('favorited');
+                    
+                    // 更新本地存储
+                    const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+                    favorites[song.id] = isFavorited;
+                    localStorage.setItem('favorites', JSON.stringify(favorites));
+                    
+                    // 更新按钮样式
+                    if(isFavorited) {
+                        favoriteBtn.querySelector('i').style.color = 'var(--primary-color)';
+                        favoriteBtn.querySelector('i').style.webkitTextStroke = '0';
+                        showToast('已收藏');
+                    } else {
+                        favoriteBtn.querySelector('i').style.color = 'transparent';
+                        favoriteBtn.querySelector('i').style.webkitTextStroke = '1px var(--primary-color)';
+                        showToast('已取消收藏');
+                    }
                 });
                 
                 // 点击卡片跳转到歌曲目录
@@ -552,6 +976,17 @@
             updateProgressBar();
         }
 
+        // 显示提示
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+        
         // 更新进度条
         function updateProgressBar() {
             const audioElement = document.getElementById('audioElement');
@@ -629,6 +1064,172 @@
         }
 
         // 页面加载完成后初始化
+        function initFavorites() {
+            const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            document.querySelectorAll('.favorite-button').forEach(button => {
+                const songId = button.getAttribute('data-id');
+                if (favorites.includes(songId)) {
+                    button.classList.add('favorited');
+                }
+                
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const songId = button.getAttribute('data-id');
+                    let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+                    
+                    if (favorites.includes(songId)) {
+                        favorites = favorites.filter(id => id !== songId);
+                        button.classList.remove('favorited');
+                    } else {
+                        favorites.push(songId);
+                        button.classList.add('favorited');
+                    }
+                    
+                    localStorage.setItem('favorites', JSON.stringify(favorites));
+                });
+            });
+        }
+        
+        // 初始化收藏弹窗功能
+        function initFavoritesModal() {
+            const favoritesButton = document.getElementById('favoritesButton');
+            const favoritesModal = document.getElementById('favoritesModal');
+            const closeFavoritesModal = document.getElementById('closeFavoritesModal');
+            const exploreSongs = document.getElementById('exploreSongs');
+            
+            // 打开收藏弹窗
+            favoritesButton.addEventListener('click', () => {
+                updateFavoritesList();
+                favoritesModal.classList.add('active');
+                document.body.style.overflow = 'hidden'; // 防止背景滚动
+            });
+            
+            // 关闭收藏弹窗
+            closeFavoritesModal.addEventListener('click', () => {
+                favoritesModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+            
+            // 点击外部区域关闭弹窗
+            favoritesModal.addEventListener('click', (e) => {
+                if (e.target === favoritesModal) {
+                    favoritesModal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // 点击"去发现音乐"按钮
+            exploreSongs.addEventListener('click', () => {
+                favoritesModal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        // 更新收藏列表
+        async function updateFavoritesList() {
+            const favoritesList = document.getElementById('favoritesList');
+            const favoritesEmpty = document.getElementById('favoritesEmpty');
+            const allSongs = await loadSongs();
+            
+            // 从localStorage获取收藏歌曲ID
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+            const favoriteSongs = allSongs.filter(song => favorites[song.id]);
+            
+            // 清空列表
+            favoritesList.innerHTML = '';
+            
+            // 显示收藏列表或空状态
+            if (favoriteSongs.length > 0) {
+                favoritesEmpty.style.display = 'none';
+                favoritesList.style.display = 'block';
+                
+                // 生成收藏列表项
+                favoriteSongs.forEach(song => {
+                    // 生成随机颜色渐变
+                    const colors = [
+                        'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+                        'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+                        'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+                        'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+                        'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)',
+                        'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)',
+                        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+                        'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)'
+                    ];
+                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    const item = document.createElement('div');
+                    item.className = 'favorite-item';
+                    item.innerHTML = `
+                        <div class="favorite-item-image" style="background: ${randomColor}">${song.title.charAt(0)}</div>
+                        <div class="favorite-item-info">
+                            <div class="favorite-item-title">${song.title}</div>
+                            <div class="favorite-item-artist">${song.artist}</div>
+                        </div>
+                        <div class="favorite-item-actions">
+                            <button class="favorite-action-button play-favorite" data-id="${song.id}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="favorite-action-button remove-favorite" data-id="${song.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // 播放收藏歌曲
+                    const playBtn = item.querySelector('.play-favorite');
+                    playBtn.addEventListener('click', () => {
+                        playSong(song);
+                    });
+                    
+                    // 移除收藏
+                    const removeBtn = item.querySelector('.remove-favorite');
+                    removeBtn.addEventListener('click', () => {
+                        // 更新本地存储
+                        const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+                        delete favorites[song.id];
+                        localStorage.setItem('favorites', JSON.stringify(favorites));
+                        
+                        // 更新UI
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateX(20px)';
+                        setTimeout(() => {
+                            item.remove();
+                            // 检查是否为空
+                            if (favoritesList.children.length === 0) {
+                                favoritesList.style.display = 'none';
+                                favoritesEmpty.style.display = 'flex';
+                            }
+                        }, 300);
+                        
+                        // 更新主页面收藏按钮状态
+                        const mainFavoriteBtn = document.querySelector(`.favorite-button[data-id="${song.id}"]`);
+                        if (mainFavoriteBtn) {
+                            mainFavoriteBtn.classList.remove('favorited');
+                            mainFavoriteBtn.querySelector('i').style.color = 'transparent';
+                            mainFavoriteBtn.querySelector('i').style.webkitTextStroke = '1.5px var(--primary-color)';
+                        }
+                        
+                        showToast('已从收藏中移除');
+                    });
+                    
+                    // 点击项目跳转到歌曲目录
+                    item.addEventListener('click', (e) => {
+                        // 防止点击按钮时触发
+                        if (!e.target.closest('.favorite-action-button')) {
+                            window.location.href = `${song.folderName}/`;
+                        }
+                    });
+                    
+                    favoritesList.appendChild(item);
+                });
+            } else {
+                favoritesList.style.display = 'none';
+                favoritesEmpty.style.display = 'flex';
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', async function() {
             // 初始化主题
             const savedTheme = localStorage.getItem('theme') || 'light';
@@ -645,6 +1246,9 @@
             // 初始化播放器控制
             initPlayerControls();
             
+            // 初始化收藏弹窗功能
+            initFavoritesModal();
+            
             // 显示所有歌曲
             displaySongs(allSongs);
             
@@ -655,7 +1259,23 @@
                 const query = this.value.trim();
                 const filteredSongs = searchSongs(allSongs, query);
                 displaySongs(filteredSongs);
+            
+            
+            // 设置收藏弹窗的空状态初始显示
+            const favoritesEmpty = document.getElementById('favoritesEmpty');
+            favoritesEmpty.style.display = 'flex';
+            
+            // 设置收藏按钮的初始状态
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+            document.querySelectorAll('.favorite-button').forEach(button => {
+                const songId = button.getAttribute('data-id');
+                if (favorites[songId]) {
+                    button.classList.add('favorited');
+                    button.querySelector('i').style.color = 'var(--primary-color)';
+                    button.querySelector('i').style.webkitTextStroke = '0';
+                }
             });
+        });
         });
     </script>
 </body>
