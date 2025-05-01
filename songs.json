@@ -64,5 +64,35 @@
         "artist": "小乐哥（王唯乐）",
         "songPath":"慢慢/慢慢-小乐哥（王唯乐）.mp3",
         "lyricsPath":"慢慢/慢慢-小乐哥（王唯乐）.lrc"
+    },
+    {
+        "title": "Kamin",
+        "artist": "Sam",
+        "songPath":"kamin/kamin-Sam.mp3",
+        "lyricsPath":"kamin/kamin-Sam.lrc"
+    },
+    {
+        "title": "Take Me Hand",
+        "artist": "AISHI DANCE&Cécile Corbel",
+        "songPath":"Take Me Hand/Take Me Hand-DAISHI DANCE&Cécile Corbel.mp3",
+        "lyricsPath":"Take Me Hand/Take Me Hand-DAISHI DANCE&Cécile Corbel.lrc"
+    },
+    {
+        "title": "如果爱忘了",
+        "artist": "汪苏泷&单依纯",
+        "songPath":"如果爱忘了/如果爱忘了-汪苏泷&单依纯.mp3",
+        "lyricsPath":"如果爱忘了/如果爱忘了-汪苏泷&单依纯.lrc"
+    },
+    {
+        "title": "Cry For Me",
+        "artist": "Michita",
+        "songPath":"Cry For Me/Cry For Me-Michita.mp3",
+        "lyricsPath":"Cry For Me/Cry For Me-Michita.lrc"
+    },
+    {
+        "title": "我用什么把你留住",
+        "artist": "福禄寿Floruit Show",
+        "songPath":"我用什么把你留住/我用什么把你留住-福禄寿Floruit Show.mp3",
+        "lyricsPath":"我用什么把你留住/我用什么把你留住-福禄寿Floruit Show.lrc"
     }
 ]
