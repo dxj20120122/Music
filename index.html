@@ -396,6 +396,29 @@
             color: var(--text-color);
             margin: 0;
         }
+
+        .playlist-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .create-playlist-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .create-playlist-button:hover {
+            background-color: var(--primary-hover);
+        }
         
         .close-button {
             background: none;
@@ -403,7 +426,7 @@
             color: var(--secondary-color);
             font-size: 20px;
             cursor: pointer;
-            width: 40px;
+            width: 96px;
             height: 40px;
             border-radius: 50%;
             display: flex;
@@ -943,10 +966,11 @@
         <div class="playlist-content">
             <div class="playlist-header">
                 <h2>我的歌单</h2>
+                <button class="create-playlist-button" id="createNewPlaylist">创建歌单</button>
                 <button class="close-button" id="closePlaylistModal">
-                    <i class="fas fa-times"></i>
+                  <i class="fas fa-times"></i>
                 </button>
-            </div>
+              </div>
             <div class="playlist-list" id="playlistList">
                 <!-- 歌单列表将通过JavaScript动态生成 -->
             </div>
@@ -1509,6 +1533,11 @@
                 updatePlaylistList();
                 document.getElementById('playlistModal').classList.add('active');
                 document.body.style.overflow = 'hidden';
+            });
+
+            document.getElementById('createNewPlaylist').addEventListener('click', () => {
+                document.getElementById('playlistModal').classList.remove('active');
+                document.getElementById('createPlaylistModal').classList.add('active');
             });
             
             // 关闭歌单弹窗
