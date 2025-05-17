@@ -1127,7 +1127,32 @@
                             return null;
                         }
                         
-                        const songDetails = await songResponse.json();
+                        // 检查响应内容类型是否为JSON
+                        const contentType = songResponse.headers.get('content-type');
+                        if (!contentType || !contentType.includes('application/json')) {
+                            console.warn(`歌曲 ${songName} 的响应不是JSON格式`);
+                            return null;
+                        }
+                        
+                        // 尝试解析JSON，捕获可能的语法错误
+                        try {
+                            const songDetails = await songResponse.json();
+                            if (!Array.isArray(songDetails) || songDetails.length === 0) {
+                                return null;
+                            }
+                            return {
+                                id: index + 1,
+                                title: songDetails[0].title || songName,
+                                artist: songDetails[0].artist || '',
+                                folderName: songName,
+                                cover: songDetails[0].cover || '',
+                                audio: songDetails[0].audio || '',
+                                lyrics: songDetails[0].lyrics || ''
+                            };
+                        } catch (error) {
+                            console.error(`解析歌曲 ${songName} 的JSON数据时出错:`, error);
+                            return null;
+                        }
                         // 确保songDetails是一个数组并且有内容
                         if (Array.isArray(songDetails) && songDetails.length > 0) {
                             // 获取第一个元素作为歌曲详情
