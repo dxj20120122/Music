@@ -65,6 +65,8 @@
             animation: rotate 20s linear infinite;
             animation-play-state: paused;
             transition: transform 0.3s ease;
+            -webkit-transform-style: preserve-3d;
+            -webkit-backface-visibility: hidden;
         }
 
         .cover-container.playing {
@@ -198,6 +200,8 @@
 
         .btn:active {
             transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.3) !important;
+            transition: transform 0.1s, background 0.1s;
         }
 
         .btn-play {
@@ -677,27 +681,35 @@
             let isDraggingVolume = false;
             // 保存静音前的音量
             let lastVolume = 0.7;
+            // 触摸事件相关变量
+            let lastTouchTime = 0;
+            let lastTouchY = 0;
 
             // 加载歌曲数据
-            fetch('songs.json')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('网络响应不正常');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    songs = data;
-                    if (songs.length > 0) {
-                        loadSong(currentSongIndex);
-                    } else {
-                        showError("没有找到歌曲数据");
-                    }
-                })
-                .catch(error => {
-                    console.error('加载歌曲数据失败:', error);
-                    showError("加载歌曲数据失败");
-                });
+            function initPlayer() {
+                fetch('songs.json')
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('网络响应不正常');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        songs = data;
+                        if (songs.length > 0) {
+                            loadSong(currentSongIndex);
+                        } else {
+                            showError("没有找到歌曲数据");
+                        }
+                    })
+                    .catch(error => {
+                        console.error('加载歌曲数据失败:', error);
+                        showError("加载歌曲数据失败");
+                    });
+
+                // 加载保存的音量设置
+                loadVolume();
+            }
 
             // 加载歌曲
             function loadSong(index) {
@@ -708,10 +720,10 @@
                 const song = songs[index];
 
                 // 更新歌曲信息
-                songTitle.textContent = song.title;
-                songArtist.textContent = song.artist;
+                songTitle.textContent = song.title || '未知歌曲';
+                songArtist.textContent = song.artist || '未知艺术家';
                 coverImage.src = song.cover || 'https://via.placeholder.com/300';
-                audio.src = song.audio;
+                audio.src = song.audio || '';
 
                 // 重置播放器状态
                 progress.style.width = '0%';
@@ -762,27 +774,36 @@
             function parseLyrics(lrcText) {
                 const lines = lrcText.split('\n');
                 lyricsContent.innerHTML = '';
+                lyrics = [];
+                lyricTimes = [];
 
                 lines.forEach(line => {
-                    // 匹配时间标签 [mm:ss.xx] 或 [mm:ss]
-                    const timeMatches = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]/g);
-                    if (!timeMatches) return;
+                    try {
+                        // 跳过空行和注释
+                        if (!line.trim() || line.startsWith('//')) return;
+                        
+                        // 匹配时间标签 [mm:ss.xx] 或 [mm:ss]
+                        const timeMatches = line.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]/g);
+                        if (!timeMatches) return;
 
-                    // 获取歌词文本
-                    const text = line.replace(/\[.*?\]/g, '').trim();
-                    if (!text) return;
+                        // 获取歌词文本
+                        const text = line.replace(/\[.*?\]/g, '').trim();
+                        if (!text) return;
 
-                    timeMatches.forEach(timeTag => {
-                        const timeMatch = timeTag.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]/);
-                        if (timeMatch) {
-                            const minutes = parseInt(timeMatch[1]);
-                            const seconds = parseInt(timeMatch[2]);
-                            const hundredths = timeMatch[3] ? parseInt(timeMatch[3]) : 0;
-                            const time = minutes * 60 + seconds + hundredths / 100;
+                        timeMatches.forEach(timeTag => {
+                            const timeMatch = timeTag.match(/\[(\d{2}):(\d{2})(?:\.(\d{2}))?\]/);
+                            if (timeMatch) {
+                                const minutes = parseInt(timeMatch[1]);
+                                const seconds = parseInt(timeMatch[2]);
+                                const hundredths = timeMatch[3] ? parseInt(timeMatch[3]) : 0;
+                                const time = minutes * 60 + seconds + hundredths / 100;
 
-                            lyrics.push({ time, text });
-                        }
-                    });
+                                lyrics.push({ time, text });
+                            }
+                        });
+                    } catch (error) {
+                        console.error('解析歌词行失败:', line, error);
+                    }
                 });
 
                 // 按时间排序歌词
@@ -800,10 +821,17 @@
                     // 存储时间点用于快速查找
                     lyricTimes.push(lyric.time);
                 });
+
+                // 如果没有解析到歌词，显示提示
+                if (lyrics.length === 0) {
+                    lyricsContent.innerHTML = '<div class="lyrics-line">暂无有效歌词</div>';
+                }
             }
 
             // 更新当前高亮歌词
             function updateLyrics(currentTime) {
+                if (!lyricTimes.length) return;
+                
                 // 找到当前时间对应的歌词
                 let activeIndex = -1;
                 for (let i = 0; i < lyricTimes.length; i++) {
@@ -850,7 +878,6 @@
                         .then(() => {
                             playIcon.classList.replace('fa-play', 'fa-pause');
                             coverContainer.classList.add('playing');
-                            // 添加到最近播放列表
                             addToRecentlyPlayed(songs[currentSongIndex]);
                         })
                         .catch(error => {
@@ -866,8 +893,28 @@
 
             // 添加到最近播放列表
             function addToRecentlyPlayed(song) {
-                // 这里可以添加逻辑将歌曲保存到本地存储或发送到服务器
-                console.log('最近播放:', song.title);
+                try {
+                    let recentSongs = JSON.parse(localStorage.getItem('recentSongs')) || [];
+                    
+                    // 移除已存在的相同歌曲
+                    recentSongs = recentSongs.filter(s => s.audio !== song.audio);
+                    
+                    // 添加到开头
+                    recentSongs.unshift({
+                        title: song.title,
+                        artist: song.artist,
+                        cover: song.cover,
+                        audio: song.audio,
+                        timestamp: new Date().getTime()
+                    });
+                    
+                    // 只保留最近的10首
+                    recentSongs = recentSongs.slice(0, 10);
+                    
+                    localStorage.setItem('recentSongs', JSON.stringify(recentSongs));
+                } catch (error) {
+                    console.error('保存最近播放失败:', error);
+                }
             }
 
             // 显示提示信息
@@ -901,8 +948,29 @@
                 }, 3000);
             }
 
+            // 保存音量设置
+            function saveVolume() {
+                localStorage.setItem('playerVolume', audio.volume);
+            }
+
+            // 加载音量设置
+            function loadVolume() {
+                try {
+                    const savedVolume = parseFloat(localStorage.getItem('playerVolume'));
+                    if (!isNaN(savedVolume)) {
+                        audio.volume = savedVolume;
+                        volumeProgress.style.width = `${savedVolume * 100}%`;
+                        updateVolumeIcon(savedVolume);
+                        lastVolume = savedVolume;
+                    }
+                } catch (error) {
+                    console.error('加载音量设置失败:', error);
+                }
+            }
+
             // 快进15秒
             btnForward.addEventListener('click', () => {
+                if (isNaN(audio.duration)) return;
                 audio.currentTime = Math.min(audio.currentTime + 15, audio.duration);
                 showToast('前进15秒');
             });
@@ -918,6 +986,8 @@
             progressBar.addEventListener('touchstart', startDragProgress);
             
             function startDragProgress(e) {
+                if (isNaN(audio.duration)) return;
+                
                 isDraggingProgress = true;
                 updateProgress(e);
                 
@@ -931,7 +1001,7 @@
             }
             
             function updateProgress(e) {
-                if (!isDraggingProgress) return;
+                if (!isDraggingProgress || isNaN(audio.duration)) return;
                 
                 const rect = progressBar.getBoundingClientRect();
                 const clientX = e.clientX || (e.touches && e.touches[0].clientX);
@@ -956,6 +1026,7 @@
 
             // 点击进度条
             progressBar.addEventListener('click', (e) => {
+                if (isNaN(audio.duration)) return;
                 const percent = e.offsetX / progressBar.offsetWidth;
                 audio.currentTime = percent * audio.duration;
             });
@@ -999,6 +1070,7 @@
                 
                 // 保存音量
                 lastVolume = percent;
+                saveVolume();
             }
             
             function endDragVolume() {
@@ -1016,6 +1088,7 @@
                 volumeProgress.style.width = `${percent * 100}%`;
                 updateVolumeIcon(percent);
                 lastVolume = percent;
+                saveVolume();
                 
                 // 如果之前是静音状态，取消静音
                 if (audio.muted && percent > 0) {
@@ -1026,7 +1099,7 @@
 
             // 更新音量图标
             function updateVolumeIcon(volume) {
-                if (volume <= 0) {
+                if (volume <= 0 || audio.muted) {
                     volumeIcon.className = 'fas fa-volume-xmark';
                 } else if (volume < 0.3) {
                     volumeIcon.className = 'fas fa-volume-low';
@@ -1050,11 +1123,12 @@
                     audio.muted = true;
                     volumeIcon.className = 'fas fa-volume-xmark';
                 }
+                saveVolume();
             });
 
             // 更新进度条
             audio.addEventListener('timeupdate', () => {
-                if (!isDraggingProgress) {
+                if (!isDraggingProgress && !isNaN(audio.duration)) {
                     const currentTime = audio.currentTime;
                     const duration = audio.duration;
                     const percent = (currentTime / duration) * 100;
@@ -1094,6 +1168,8 @@
             audio.addEventListener('error', () => {
                 showError('音频加载失败');
                 loading.style.display = 'none';
+                playIcon.classList.replace('fa-pause', 'fa-play');
+                coverContainer.classList.remove('playing');
             });
 
             // 封面图片错误处理
@@ -1119,12 +1195,14 @@
                     if (audio.muted) {
                         audio.muted = false;
                     }
+                    saveVolume();
                 } else if (e.code === 'ArrowDown') {
                     // 减小音量
                     audio.volume = Math.max(audio.volume - 0.1, 0);
                     volumeProgress.style.width = `${audio.volume * 100}%`;
                     updateVolumeIcon(audio.volume);
                     lastVolume = audio.volume;
+                    saveVolume();
                 } else if (e.code === 'KeyM') {
                     // 静音/取消静音
                     audio.muted = !audio.muted;
@@ -1132,7 +1210,12 @@
                         volumeIcon.className = 'fas fa-volume-xmark';
                     } else {
                         updateVolumeIcon(audio.volume);
-                    }
+                    lastVolume = audio.volume;
+                    saveVolume();
+                    volumeProgress.style.width = `${lastVolume * 100}%`;
+                    updateVolumeIcon(lastVolume);
+                    volumeIcon.className = 'fas fa-volume-high';
+                }
                 }
             });
 
@@ -1143,15 +1226,18 @@
             coverContainer.addEventListener('dblclick', togglePlay);
 
             // 触摸设备支持
-            let lastTouchTime = 0;
             coverContainer.addEventListener('touchend', (e) => {
                 const currentTime = new Date().getTime();
-                if (currentTime - lastTouchTime < 300) {
-                    // 双击处理
+                const currentY = e.changedTouches[0].clientY;
+                
+                // 检查Y轴位移是否小于10px，避免滑动误触发
+                if (currentTime - lastTouchTime < 300 && Math.abs(currentY - lastTouchY) < 10) {
                     togglePlay();
                     e.preventDefault();
                 }
+                
                 lastTouchTime = currentTime;
+                lastTouchY = currentY;
             });
 
             // 防止双击缩放
@@ -1168,13 +1254,21 @@
             }
 
             // 初始化音量
-            audio.volume = 0.7;
-            volumeProgress.style.width = '70%';
-            updateVolumeIcon(0.7);
+            audio.addEventListener('canplay', function() {
+                if (isNaN(audio.volume)) {
+                    audio.volume = 0.7;
+                    volumeProgress.style.width = '70%';
+                    updateVolumeIcon(0.7);
+                }
+            }, { once: true });
             
             // 检测网络状态
             window.addEventListener('online', () => {
                 showToast('网络已连接');
+                // 尝试重新加载数据
+                if (songs.length === 0) {
+                    initPlayer();
+                }
             });
             
             window.addEventListener('offline', () => {
@@ -1188,6 +1282,9 @@
                 deferredPrompt = e;
                 showToast('点击分享按钮可添加到主屏幕');
             });
+
+            // 初始化播放器
+            initPlayer();
         });
     </script>
 </body>
