@@ -1134,10 +1134,26 @@
                             return null;
                         }
                         
+                        // 生产环境额外检查 - 确保响应体不为空
+                        if (songResponse.status === 204 || songResponse.headers.get('content-length') === '0') {
+                            console.warn(`歌曲 ${songName} 的响应体为空`);
+                            return null;
+                        }
+                        
                         // 尝试解析JSON，捕获可能的语法错误
                         try {
-                            const songDetails = await songResponse.json();
+                            // 先读取响应文本用于调试
+                            const responseText = await songResponse.text();
+                            
+                            // 确保响应文本是有效的JSON
+                            if (!responseText.trim().startsWith('{') && !responseText.trim().startsWith('[')) {
+                                console.warn(`歌曲 ${songName} 的响应不是有效的JSON格式`);
+                                return null;
+                            }
+                            
+                            const songDetails = JSON.parse(responseText);
                             if (!Array.isArray(songDetails) || songDetails.length === 0) {
+                                console.warn(`歌曲 ${songName} 的数据格式不正确`);
                                 return null;
                             }
                             return {
