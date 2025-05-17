@@ -423,7 +423,8 @@
             }
 
             /* 添加滑动过渡效果 */
-            .album-art, .lyrics-container {
+            .album-art,
+            .lyrics-container {
                 transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
             }
         }
@@ -649,7 +650,8 @@
                 scroll-behavior: auto;
             }
 
-            .album-art, .lyrics-container {
+            .album-art,
+            .lyrics-container {
                 transition: none !important;
             }
         }
@@ -816,7 +818,7 @@
 
                 // 点击指示器切换视图
                 indicatorDots.forEach(dot => {
-                    dot.addEventListener('click', function() {
+                    dot.addEventListener('click', function () {
                         const targetView = this.dataset.view;
                         if (targetView !== currentView) {
                             switchView(targetView);
@@ -826,7 +828,7 @@
 
                 // 触摸事件处理
                 const container = document.querySelector('.glass-container');
-                
+
                 container.addEventListener('touchstart', handleTouchStart, { passive: true });
                 container.addEventListener('touchmove', handleTouchMove, { passive: false });
                 container.addEventListener('touchend', handleTouchEnd, { passive: true });
@@ -835,7 +837,7 @@
             // 处理触摸开始
             function handleTouchStart(e) {
                 if (!isMobileView) return;
-                
+
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
                 isSwiping = false;
@@ -844,7 +846,7 @@
             // 处理触摸移动
             function handleTouchMove(e) {
                 if (!isMobileView) return;
-                
+
                 const touchX = e.touches[0].clientX;
                 const touchY = e.touches[0].clientY;
                 const deltaX = touchX - touchStartX;
@@ -858,13 +860,13 @@
 
                 if (isSwiping) {
                     // 根据当前视图限制滑动方向
-                    if ((currentView === 'album' && deltaX < 0) || 
+                    if ((currentView === 'album' && deltaX < 0) ||
                         (currentView === 'lyrics' && deltaX > 0)) {
-                        
+
                         // 计算滑动比例 (0-1)
                         let ratio = Math.abs(deltaX) / window.innerWidth;
                         ratio = Math.min(ratio, 1);
-                        
+
                         // 应用滑动效果
                         if (currentView === 'album') {
                             albumArtView.style.transform = `translateX(${-ratio * 100}%)`;
@@ -880,7 +882,7 @@
             // 处理触摸结束
             function handleTouchEnd(e) {
                 if (!isMobileView || !isSwiping) return;
-                
+
                 const touchEndX = e.changedTouches[0].clientX;
                 const deltaX = touchEndX - touchStartX;
                 const ratio = Math.abs(deltaX) / window.innerWidth;
@@ -907,9 +909,9 @@
             // 切换视图
             function switchView(targetView) {
                 if (targetView === currentView) return;
-                
+
                 currentView = targetView;
-                
+
                 if (targetView === 'lyrics') {
                     albumArtView.style.transform = 'translateX(-100%)';
                     lyricsView.style.transform = 'translateX(-100%)';
@@ -919,7 +921,7 @@
                     lyricsView.style.transform = 'translateX(0)';
                     lyricsView.classList.remove('active');
                 }
-                
+
                 // 更新指示器
                 updateIndicator();
             }
@@ -949,10 +951,10 @@
             // 处理窗口大小变化
             function handleResize() {
                 const newIsMobileView = window.innerWidth <= 900;
-                
+
                 if (newIsMobileView !== isMobileView) {
                     isMobileView = newIsMobileView;
-                    
+
                     if (isMobileView) {
                         // 切换到移动视图
                         viewIndicator.style.display = 'flex';
@@ -1281,9 +1283,11 @@
             // 进度条控制 - 鼠标/触摸事件
             progressBar.addEventListener('mousedown', startDragProgress);
             progressBar.addEventListener('touchstart', function (e) {
-                e.preventDefault();
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
                 startDragProgress(e);
-            });
+            }, { passive: false });
 
             function startDragProgress(e) {
                 if (isNaN(audio.duration)) return;
@@ -1294,7 +1298,7 @@
                 document.addEventListener('mousemove', updateProgress);
                 document.addEventListener('touchmove', updateProgress, { passive: false });
                 document.addEventListener('mouseup', endDragProgress);
-                document.addEventListener('touchend', endDragProgress);
+                document.addEventListener('touchend', endDragProgress, { passive: true });
             }
 
             function updateProgress(e) {
@@ -1306,7 +1310,9 @@
                 // 处理触摸事件和鼠标事件
                 if (e.touches && e.touches.length > 0) {
                     clientX = e.touches[0].clientX;
-                    e.preventDefault(); // 防止页面滚动
+                    if (e.cancelable) {
+                        e.preventDefault(); // 防止页面滚动
+                    }
                 } else {
                     clientX = e.clientX;
                 }
@@ -1341,19 +1347,19 @@
 
             // 音量控制 - 鼠标/触摸事件
             volumeBar.addEventListener('mousedown', startDragVolume);
-            volumeBar.addEventListener('touchstart', startDragVolume);
+            volumeBar.addEventListener('touchstart', startDragVolume, { passive: false });
 
             function startDragVolume(e) {
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
                 isDraggingVolume = true;
                 updateVolume(e);
 
                 document.addEventListener('mousemove', updateVolume);
-                document.addEventListener('touchmove', updateVolume);
+                document.addEventListener('touchmove', updateVolume, { passive: false });
                 document.addEventListener('mouseup', endDragVolume);
-                document.addEventListener('touchend', endDragVolume);
-
-                // 防止触摸事件触发页面滚动
-                e.preventDefault();
+                document.addEventListener('touchend', endDragVolume, { passive: true });
             }
 
             function updateVolume(e) {
@@ -1538,16 +1544,20 @@
                 // 检查Y轴位移是否小于10px，避免滑动误触发
                 if (currentTime - lastTouchTime < 300 && Math.abs(currentY - lastTouchY) < 10) {
                     togglePlay();
-                    e.preventDefault();
+                    if (e.cancelable) {
+                        e.preventDefault();
+                    }
                 }
 
                 lastTouchTime = currentTime;
                 lastTouchY = currentY;
-            });
+            }, { passive: false });
 
             // 防止双击缩放
             document.addEventListener('dblclick', (e) => {
-                e.preventDefault();
+                if (e.cancelable) {
+                    e.preventDefault();
+                }
             }, { passive: false });
 
             // 格式化时间显示 (mm:ss)
