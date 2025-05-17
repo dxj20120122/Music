@@ -1,98 +1,18 @@
 [
-    {
-        "title": "越来越不懂",
-        "artist": "蔡健雅",
-        "songPath":"越来越不懂/越来越不懂-蔡健雅.mp3",
-        "lyricsPath":"越来越不懂-蔡健雅.lrc"
-    },
-    {
-        "title": "跳楼机",
-        "artist": "LBI利比（时柏尘）",
-        "songPath":"跳楼机/跳楼机 - LBI利比（时柏尘）.mp3",
-        "lyricsPath":"跳楼机/跳楼机-LBI利比（时柏尘）.lrc"
-    },
-    {
-        "title": "小美满",
-        "artist": "周深",
-        "songPath":"小美满/小美满-周深.mp3",
-        "lyricsPath":"小美满/小美满-周深.lrc"
-    },
-    {
-        "title": "青花瓷",
-        "artist": "周杰伦",
-        "songPath":"青花瓷/青花瓷-周杰伦.mp3",
-        "lyricsPath":"青花瓷/青花瓷-周杰伦.lrc"
-    },
-    {
-        "title": "晴天",
-        "artist": "周杰伦",
-        "songPath":"晴天/晴天-周杰伦.mp3",
-        "lyricsPath":"晴天/晴天-周杰伦.lrc"
-    },
-    {
-        "title": "不落幕的夏天",
-        "artist": "小蓝背心",
-        "songPath":"不落幕的夏天/不落幕的夏天-小蓝背心.mp3",
-        "lyricsPath":"不落幕的夏天/不落幕的夏天-小蓝背心.lrc"
-    },
-    {
-        "title": "消散对白",
-        "artist": "丁禹锡",
-        "songPath":"消散对白/消散对白-丁禹兮.mp3",
-        "lyricsPath":"消散对白/消散对白-丁禹兮.lrc"
-    },
-    {
-        "title": "就是哪吒",
-        "artist": "唐汉霄",
-        "songPath":"就是哪吒/就是哪吒-唐汉霄.mp3",
-        "lyricsPath":"就是哪吒/就是哪吒-唐汉霄.lrc"
-    },
-    {
-        "title": "如果可以",
-        "artist": "韦礼安",
-        "songPath":"如果可以/如果可以-韦礼安.mp3",
-        "lyricsPath":"如果可以/如果可以-韦礼安.lrc"
-    },
-    {
-        "title": "最好的安排",
-        "artist": "曲婉婷",
-        "songPath":"最好的安排/最好的安排-曲婉婷.mp3",
-        "lyricsPath":"最好的安排/最好的安排-曲婉婷.lrc"
-    },
-    {
-        "title": "慢慢",
-        "artist": "小乐哥（王唯乐）",
-        "songPath":"慢慢/慢慢-小乐哥（王唯乐）.mp3",
-        "lyricsPath":"慢慢/慢慢-小乐哥（王唯乐）.lrc"
-    },
-    {
-        "title": "Kamin",
-        "artist": "Sam",
-        "songPath":"kamin/kamin-Sam.mp3",
-        "lyricsPath":"kamin/kamin-Sam.lrc"
-    },
-    {
-        "title": "Take Me Hand",
-        "artist": "AISHI DANCE&Cécile Corbel",
-        "songPath":"Take Me Hand/Take Me Hand-DAISHI DANCE&Cécile Corbel.mp3",
-        "lyricsPath":"Take Me Hand/Take Me Hand-DAISHI DANCE&Cécile Corbel.lrc"
-    },
-    {
-        "title": "如果爱忘了",
-        "artist": "汪苏泷&单依纯",
-        "songPath":"如果爱忘了/如果爱忘了-汪苏泷&单依纯.mp3",
-        "lyricsPath":"如果爱忘了/如果爱忘了-汪苏泷&单依纯.lrc"
-    },
-    {
-        "title": "Cry For Me",
-        "artist": "Michita",
-        "songPath":"Cry For Me/Cry For Me-Michita.mp3",
-        "lyricsPath":"Cry For Me/Cry For Me-Michita.lrc"
-    },
-    {
-        "title": "我用什么把你留住",
-        "artist": "福禄寿Floruit Show",
-        "songPath":"我用什么把你留住/我用什么把你留住-福禄寿Floruit Show.mp3",
-        "lyricsPath":"我用什么把你留住/我用什么把你留住-福禄寿Floruit Show.lrc"
-    }
+    "越来越不懂",
+    "跳楼机",
+    "小美满",
+    "青花瓷",
+    "晴天",
+    "不落幕的夏天",
+    "消散对白",
+    "就是哪吒",
+    "如果可以",
+    "最好的安排",
+    "慢慢",
+    "Kamin",
+    "Take Me Hand",
+    "如果爱忘了",
+    "Cry For Me",
+    "我用什么把你留住"
 ]

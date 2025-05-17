@@ -2,35 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta name="msvalidate.01" content="17F58E477B9CFB986D13AC558D85FD68" />
-    <script src="config.js"></script>
-    <script src="cdn-helper.js"></script>
-    <script>
-        // 配置GitHub仓库信息
-        window.addEventListener('DOMContentLoaded', () => {
-            // 设置GitHub仓库信息
-            config.github.username = '你的GitHub用户名'; // TODO: 替换为实际的GitHub用户名
-            config.github.repo = '你的仓库名';           // TODO: 替换为实际的仓库名
-        });
-
-        // 注册Service Worker (仅在HTTPS环境下启用)
-        if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-            window.addEventListener('load', async () => {
-                try {
-                    // 测试CDN可用性
-                    const cdnStatus = await cdnHelper.testCDNAvailability();
-                    console.log('CDN状态:', cdnStatus);
-
-                    // 注册Service Worker
-                    const registration = await navigator.serviceWorker.register('sw.js');
-                    console.log('ServiceWorker 注册成功:', registration.scope);
-                } catch (err) {
-                    console.error('初始化失败:', err);
-                }
-            });
-        } else if ('serviceWorker' in navigator) {
-            console.log('ServiceWorker 已禁用 - 仅支持HTTPS或localhost环境');
-        }
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple - 免费音乐</title>
@@ -660,6 +631,39 @@
             transform: translateY(100%);
             transition: transform 0.3s ease;
             z-index: 100;
+            max-height: 80px;
+            overflow: hidden;
+        }
+        
+        .audio-player.expanded {
+            max-height: 300px;
+        }
+        
+        .lyrics-container {
+            display: none;
+            padding: 20px;
+            height: calc(100% - 80px);
+            overflow-y: auto;
+        }
+        
+        .audio-player.expanded .lyrics-container {
+            display: block;
+        }
+        
+        .expand-button {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            color: var(--secondary-color);
+            font-size: 20px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .expand-button:hover {
+            color: var(--primary-color);
         }
         
         .audio-player.active {
@@ -1103,22 +1107,53 @@
         // 从songs.json加载歌曲数据
         async function loadSongs() {
             try {
+                // 首先从主songs.json获取歌曲名列表
                 const response = await fetch('songs.json');
                 if (!response.ok) {
-                    throw new Error('无法加载歌曲数据');
+                    throw new Error('无法加载歌曲列表');
                 }
-                const songs = await response.json();
+                const songNames = await response.json();
                 
-                // 为每首歌添加ID和获取文件夹名
-                return songs.map((song, index) => {
-                    // 从songPath提取文件夹名（第一个路径部分）
-                    const folderName = song.songPath.split('/')[0];
-                    return {
-                        ...song,
-                        id: index + 1,
-                        folderName: folderName
-                    };
+                // 创建一个数组来存储所有歌曲的详细信息
+                const allSongs = [];
+                
+                // 为每个歌曲名创建一个Promise来获取详细信息
+                const songPromises = songNames.map(async (songName, index) => {
+                    try {
+                        // 从每个歌曲文件夹中获取详细信息
+                        const songResponse = await fetch(`${songName}/songs.json`);
+                        if (!songResponse.ok) {
+                            console.warn(`无法加载歌曲 ${songName} 的详细信息`);
+                            return null;
+                        }
+                        
+                        const songDetails = await songResponse.json();
+                        // 确保songDetails是一个数组并且有内容
+                        if (Array.isArray(songDetails) && songDetails.length > 0) {
+                            // 获取第一个元素作为歌曲详情
+                            const songDetail = songDetails[0];
+                            return {
+                                id: index + 1,
+                                title: songDetail.title || songName,
+                                artist: songDetail.artist || '',
+                                folderName: songName,
+                                cover: songDetail.cover || '',
+                                audio: songDetail.audio || '',
+                                lyrics: songDetail.lyrics || ''
+                            };
+                        }
+                        return null;
+                    } catch (error) {
+                        console.error(`加载歌曲 ${songName} 详细信息时出错:`, error);
+                        return null;
+                    }
                 });
+                
+                // 等待所有Promise完成
+                const songsWithDetails = await Promise.all(songPromises);
+                
+                // 过滤掉null值并返回结果
+                return songsWithDetails.filter(song => song !== null);
             } catch (error) {
                 console.error('加载歌曲数据时出错:', error);
                 return [];
@@ -1177,8 +1212,8 @@
                 const randomColor = colors[Math.floor(Math.random() * colors.length)];
                 
                 card.innerHTML = `
-                    <div class="song-image" style="background: ${randomColor}">
-                        ${song.title.charAt(0)}
+                    <div class="song-image" style="${song.cover ? '' : `background: ${randomColor}`}">
+                        ${song.cover ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
                         <button class="play-button">
                             <i class="fas fa-play"></i>
                         </button>
@@ -1265,8 +1300,8 @@
             playerTitle.textContent = song.title;
             playerArtist.textContent = song.artist;
             
-            // 设置音频源
-            audioElement.src = song.songPath;
+            // 设置音频源 - 使用新的路径结构
+            audioElement.src = `${song.folderName}/${song.audio}`;
             
             // 显示播放器
             audioPlayer.classList.add('active');
