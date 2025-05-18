@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simple - 免费音乐</title>
+    <meta name="msvalidate.01" content="17F58E477B9CFB986D13AC558D85FD68">
+    <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <link rel="icon" type="image/png" href="favicon.png">
     <style>
         :root {
             --bg-color: #f8f9fa;
@@ -632,39 +633,6 @@
             transform: translateY(100%);
             transition: transform 0.3s ease;
             z-index: 100;
-            max-height: 80px;
-            overflow: hidden;
-        }
-        
-        .audio-player.expanded {
-            max-height: 300px;
-        }
-        
-        .lyrics-container {
-            display: none;
-            padding: 20px;
-            height: calc(100% - 80px);
-            overflow-y: auto;
-        }
-        
-        .audio-player.expanded .lyrics-container {
-            display: block;
-        }
-        
-        .expand-button {
-            position: absolute;
-            right: 20px;
-            top: 20px;
-            background: none;
-            border: none;
-            color: var(--secondary-color);
-            font-size: 20px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        
-        .expand-button:hover {
-            color: var(--primary-color);
         }
         
         .audio-player.active {
@@ -1128,48 +1096,7 @@
                             return null;
                         }
                         
-                        // 检查响应内容类型是否为JSON
-                        const contentType = songResponse.headers.get('content-type');
-                        if (!contentType || !contentType.includes('application/json')) {
-                            console.warn(`歌曲 ${songName} 的响应不是JSON格式`);
-                            return null;
-                        }
-                        
-                        // 生产环境额外检查 - 确保响应体不为空
-                        if (songResponse.status === 204 || songResponse.headers.get('content-length') === '0') {
-                            console.warn(`歌曲 ${songName} 的响应体为空`);
-                            return null;
-                        }
-                        
-                        // 尝试解析JSON，捕获可能的语法错误
-                        try {
-                            // 先读取响应文本用于调试
-                            const responseText = await songResponse.text();
-                            
-                            // 确保响应文本是有效的JSON
-                            if (!responseText.trim().startsWith('{') && !responseText.trim().startsWith('[')) {
-                                console.warn(`歌曲 ${songName} 的响应不是有效的JSON格式`);
-                                return null;
-                            }
-                            
-                            const songDetails = JSON.parse(responseText);
-                            if (!Array.isArray(songDetails) || songDetails.length === 0) {
-                                console.warn(`歌曲 ${songName} 的数据格式不正确`);
-                                return null;
-                            }
-                            return {
-                                id: index + 1,
-                                title: songDetails[0].title || songName,
-                                artist: songDetails[0].artist || '',
-                                folderName: songName,
-                                cover: songDetails[0].cover || '',
-                                audio: songDetails[0].audio || '',
-                                lyrics: songDetails[0].lyrics || ''
-                            };
-                        } catch (error) {
-                            console.error(`解析歌曲 ${songName} 的JSON数据时出错:`, error);
-                            return null;
-                        }
+                        const songDetails = await songResponse.json();
                         // 确保songDetails是一个数组并且有内容
                         if (Array.isArray(songDetails) && songDetails.length > 0) {
                             // 获取第一个元素作为歌曲详情
