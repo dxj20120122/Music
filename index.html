@@ -1074,6 +1074,9 @@
     </div>
 
     <script>
+        // 定义全局变量
+        let allSongs = [];
+
         // 从songs.json加载歌曲数据
         async function loadSongs() {
             try {
@@ -1083,9 +1086,6 @@
                     throw new Error('无法加载歌曲列表');
                 }
                 const songNames = await response.json();
-                
-                // 创建一个数组来存储所有歌曲的详细信息
-                const allSongs = [];
                 
                 // 为每个歌曲名创建一个Promise来获取详细信息
                 const songPromises = songNames.map(async (songName, index) => {
@@ -1122,8 +1122,9 @@
                 // 等待所有Promise完成
                 const songsWithDetails = await Promise.all(songPromises);
                 
-                // 过滤掉null值并返回结果
-                return songsWithDetails.filter(song => song !== null);
+                // 过滤掉null值并更新全局变量
+                allSongs = songsWithDetails.filter(song => song !== null);
+                return allSongs;
             } catch (error) {
                 console.error('加载歌曲数据时出错:', error);
                 return [];
@@ -1354,8 +1355,62 @@
         function initPlayerControls() {
             const audioElement = document.getElementById('audioElement');
             const playButton = document.getElementById('playButton');
+            const prevButton = document.getElementById('prevButton');
+            const nextButton = document.getElementById('nextButton');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            const currentTimeDisplay = document.getElementById('currentTime');
+            const durationDisplay = document.getElementById('duration');
+            const audioPlayer = document.getElementById('audioPlayer');
             
-            // 播放/暂停
+            let currentSongIndex = -1;
+            let playingPlaylist = [];
+            
+            // 播放歌曲函数
+            window.playSong = function(song) {
+                if (!song) return;
+                
+                // 更新当前播放列表和索引
+                const songGrid = document.getElementById('songGrid');
+                playingPlaylist = Array.from(songGrid.querySelectorAll('.song-card')).map(card => {
+                    const id = parseInt(card.dataset.id);
+                    return allSongs.find(s => s.id === id);
+                });
+                currentSongIndex = playingPlaylist.findIndex(s => s.id === song.id);
+                
+                // 设置音频源
+                audioElement.src = `${song.folderName}/${song.audio}`;
+                audioElement.play()
+                    .then(() => {
+                        playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    })
+                    .catch(error => {
+                        console.error('播放失败:', error);
+                    });
+                
+                // 更新播放器信息
+                document.getElementById('playerTitle').textContent = song.title;
+                document.getElementById('playerArtist').textContent = song.artist;
+                
+                // 显示播放器
+                audioPlayer.classList.add('active');
+            };
+            
+            // 播放下一首
+            function playNext() {
+                if (playingPlaylist.length === 0) return;
+                currentSongIndex = (currentSongIndex + 1) % playingPlaylist.length;
+                playSong(playingPlaylist[currentSongIndex]);
+            }
+            
+            // 播放上一首
+            function playPrev() {
+                if (playingPlaylist.length === 0) return;
+                currentSongIndex = (currentSongIndex - 1 + playingPlaylist.length) % playingPlaylist.length;
+                playSong(playingPlaylist[currentSongIndex]);
+            }
+            
+            // 播放/暂停按钮点击事件
             playButton.addEventListener('click', () => {
                 if (audioElement.paused) {
                     audioElement.play()
@@ -1371,9 +1426,32 @@
                 }
             });
             
-            // 歌曲结束事件
-            audioElement.addEventListener('ended', () => {
-                playButton.innerHTML = '<i class="fas fa-play"></i>';
+            // 上一首按钮点击事件
+            prevButton.addEventListener('click', playPrev);
+            
+            // 下一首按钮点击事件
+            nextButton.addEventListener('click', playNext);
+            
+            // 歌曲结束时自动播放下一首
+            audioElement.addEventListener('ended', playNext);
+            
+            // 进度条更新
+            audioElement.addEventListener('timeupdate', () => {
+                const progress = (audioElement.currentTime / audioElement.duration) * 100;
+                progressFill.style.width = `${progress}%`;
+                currentTimeDisplay.textContent = formatTime(audioElement.currentTime);
+            });
+            
+            // 音频加载完成后显示总时长
+            audioElement.addEventListener('loadedmetadata', () => {
+                durationDisplay.textContent = formatTime(audioElement.duration);
+            });
+            
+            // 点击进度条跳转
+            progressBar.addEventListener('click', (e) => {
+                const rect = progressBar.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audioElement.currentTime = pos * audioElement.duration;
             });
         }
 
