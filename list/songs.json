@@ -1,0 +1,94 @@
+{
+  "songs": [
+    {
+      "id": 1,
+      "title": "Blinding Lights",
+      "artist": "The Weeknd",
+      "duration": "3:20",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02a935e865e342d5b92b6a0b9a",
+      "plays": 2850000000,
+      "rank": 1
+    },
+    {
+      "id": 2,
+      "title": "Shape of You",
+      "artist": "Ed Sheeran",
+      "duration": "3:53",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02a3df5a1cc8c6e7fe3a1b5a2e",
+      "plays": 2750000000,
+      "rank": 2
+    },
+    {
+      "id": 3,
+      "title": "Dance Monkey",
+      "artist": "Tones and I",
+      "duration": "3:29",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2650000000,
+      "rank": 3
+    },
+    {
+      "id": 4,
+      "title": "Someone You Loved",
+      "artist": "Lewis Capaldi",
+      "duration": "3:02",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2550000000,
+      "rank": 4
+    },
+    {
+      "id": 5,
+      "title": "Sunflower",
+      "artist": "Post Malone, Swae Lee",
+      "duration": "2:38",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2450000000,
+      "rank": 5
+    },
+    {
+      "id": 6,
+      "title": "Stay",
+      "artist": "The Kid LAROI, Justin Bieber",
+      "duration": "2:21",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2350000000,
+      "rank": 6
+    },
+    {
+      "id": 7,
+      "title": "Rockstar",
+      "artist": "Post Malone ft. 21 Savage",
+      "duration": "3:38",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2250000000,
+      "rank": 7
+    },
+    {
+      "id": 8,
+      "title": "One Dance",
+      "artist": "Drake ft. Wizkid & Kyla",
+      "duration": "2:53",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2150000000,
+      "rank": 8
+    },
+    {
+      "id": 9,
+      "title": "Closer",
+      "artist": "The Chainsmokers ft. Halsey",
+      "duration": "4:04",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 2050000000,
+      "rank": 9
+    },
+    {
+      "id": 10,
+      "title": "Believer",
+      "artist": "Imagine Dragons",
+      "duration": "3:24",
+      "cover": "https://i.scdn.co/image/ab67616d00001e02b5b9e3e3a5a3e3a5a3e3a5a3",
+      "plays": 1950000000,
+      "rank": 10
+    }
+  ]
+}
