@@ -159,6 +159,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
 
+    // 强制所有链接在新标签页打开
+        function forceAnchorTagsNewTab() {
+            const anchors = document.querySelectorAll('a:not([target="_blank"])');
+            anchors.forEach(anchor => {
+                if (!anchor.target || anchor.target === '_self') {
+                    anchor.target = '_blank';
+                }
+            });
+        }
+
     // 格式化日期
     function formatDate(dateString) {
         const date = new Date(dateString);

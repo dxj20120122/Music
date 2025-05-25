@@ -39,7 +39,6 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: all  0.2s ease-in-out;
         }
         
         body {
@@ -1363,8 +1362,9 @@
             <nav>
                 <ul class="nav-menu">
                     <li><a href="#Simple Music" class="nav-link active">首页</a></li>
-                    <li><a href="discover" class="nav-link">发现</a></li>
-                    <li><a href="list" class="nav-link">排行榜</a></li>
+                    <li><a href="#" class="nav-link">发现</a></li>
+                    <li><a href="#" class="nav-link">排行榜</a></li>
+                    <li><a href="https://donation.moujie.dpdns.org/" class="nav-link">捐赠</a></li>
                 </ul>
             </nav>
         </div>
@@ -2569,6 +2569,16 @@
             } else {
                 showToast('歌曲已在歌单中');
             }
+        }
+
+        // 强制所有链接在新标签页打开
+        function forceAnchorTagsNewTab() {
+            const anchors = document.querySelectorAll('a:not([target="_blank"])');
+            anchors.forEach(anchor => {
+                if (!anchor.target || anchor.target === '_self') {
+                    anchor.target = '_blank';
+                }
+            });
         }
         
         // 随机打乱数组

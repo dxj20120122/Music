@@ -45,6 +45,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 songGrid.innerHTML = '<div class="no-results">无法加载歌曲数据</div>';
             });
     }
+
+    // 强制所有链接在新标签页打开
+        function forceAnchorTagsNewTab() {
+            const anchors = document.querySelectorAll('a:not([target="_blank"])');
+            anchors.forEach(anchor => {
+                if (!anchor.target || anchor.target === '_self') {
+                    anchor.target = '_blank';
+                }
+            });
+        }
     
     // 渲染歌曲
     function renderSongs() {
