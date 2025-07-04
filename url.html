@@ -63,6 +63,25 @@
             font-weight: 300;
             color: #2c3e50;
         }
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background-color: #f1f1f1;
+            margin: 20px 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .status {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -71,6 +90,12 @@
         <h1>您即将离开当前页面</h1>
         <p>系统将在 <span id="countdown">3</span> 秒后自动跳转到目标网址</p>
         <div class="url-display" id="target-url"></div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="status" id="status">正在预加载目标页面...</div>
+        
         <a href="#" class="btn" id="manual-redirect">立即跳转</a>
         <div class="countdown">如果跳转未自动进行，请点击上方按钮</div>
     </div>
@@ -86,10 +111,40 @@
         const targetUrl = decodeURIComponent(getQueryParam('url') || '');
         const displayElement = document.getElementById('target-url');
         const redirectBtn = document.getElementById('manual-redirect');
+        const progressBar = document.getElementById('progress-bar');
+        const statusElement = document.getElementById('status');
         
         if (targetUrl) {
             displayElement.textContent = targetUrl;
             redirectBtn.href = targetUrl;
+            
+            // 预加载目标页面
+            let preloaded = false;
+            const hiddenIframe = document.createElement('iframe');
+            hiddenIframe.style.display = 'none';
+            hiddenIframe.src = targetUrl;
+            document.body.appendChild(hiddenIframe);
+            
+            hiddenIframe.onload = function() {
+                preloaded = true;
+                progressBar.style.width = '100%';
+                statusElement.textContent = '目标页面已预加载完成';
+            };
+            
+            hiddenIframe.onerror = function() {
+                statusElement.textContent = '预加载失败，但仍可跳转';
+            };
+            
+            // 模拟进度条（实际预加载进度难以准确测量）
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                if (preloaded) {
+                    clearInterval(progressInterval);
+                    return;
+                }
+                progress = Math.min(progress + 10 + Math.random() * 10, 90);
+                progressBar.style.width = progress + '%';
+            }, 300);
             
             // 倒计时功能
             let seconds = 3;
@@ -101,6 +156,7 @@
                 
                 if (seconds <= 0) {
                     clearInterval(countdownInterval);
+                    clearInterval(progressInterval);
                     window.location.href = targetUrl;
                 }
             }, 1000);
@@ -109,12 +165,14 @@
             redirectBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 clearInterval(countdownInterval);
+                clearInterval(progressInterval);
                 window.location.href = targetUrl;
             });
         } else {
             displayElement.textContent = '未提供跳转URL';
             redirectBtn.style.display = 'none';
             document.getElementById('countdown').textContent = '0';
+            statusElement.textContent = '缺少目标URL参数';
         }
     </script>
 </body>
