@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>页面跳转中</title>
+    <!-- 预连接优化 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -118,6 +121,32 @@
             displayElement.textContent = targetUrl;
             redirectBtn.href = targetUrl;
             
+            try {
+                // 解析目标URL的域名用于preconnect
+                const targetDomain = new URL(targetUrl).origin;
+                
+                // 添加preconnect优化
+                const preconnectLink = document.createElement('link');
+                preconnectLink.rel = 'preconnect';
+                preconnectLink.href = targetDomain;
+                document.head.appendChild(preconnectLink);
+                
+                // 添加dns-prefetch作为后备
+                const dnsPrefetchLink = document.createElement('link');
+                dnsPrefetchLink.rel = 'dns-prefetch';
+                dnsPrefetchLink.href = targetDomain;
+                document.head.appendChild(dnsPrefetchLink);
+                
+                // 预加载目标页面HTML
+                const preloadLink = document.createElement('link');
+                preloadLink.rel = 'preload';
+                preloadLink.href = targetUrl;
+                preloadLink.as = 'document';
+                document.head.appendChild(preloadLink);
+            } catch(e) {
+                console.log('预连接优化失败:', e);
+            }
+            
             // 预加载目标页面
             let preloaded = false;
             const hiddenIframe = document.createElement('iframe');
@@ -125,26 +154,40 @@
             hiddenIframe.src = targetUrl;
             document.body.appendChild(hiddenIframe);
             
+            // 真实进度跟踪
+            let loadedResources = 0;
+            let totalResources = 0;
+            
+            // 使用PerformanceObserver监控资源加载
+            const observer = new PerformanceObserver((list) => {
+                const entries = list.getEntries();
+                totalResources = entries.length;
+                
+                entries.forEach(entry => {
+                    if (entry.initiatorType !== 'iframe') return;
+                    
+                    loadedResources++;
+                    const realProgress = Math.min(
+                        Math.floor((loadedResources / Math.max(totalResources, 1)) * 100), 
+                        90
+                    );
+                    progressBar.style.width = realProgress + '%';
+                });
+            });
+            
+            observer.observe({ entryTypes: ['resource'] });
+            
             hiddenIframe.onload = function() {
                 preloaded = true;
                 progressBar.style.width = '100%';
                 statusElement.textContent = '目标页面已预加载完成';
+                observer.disconnect();
             };
             
             hiddenIframe.onerror = function() {
                 statusElement.textContent = '预加载失败，但仍可跳转';
+                observer.disconnect();
             };
-            
-            // 模拟进度条（实际预加载进度难以准确测量）
-            let progress = 0;
-            const progressInterval = setInterval(() => {
-                if (preloaded) {
-                    clearInterval(progressInterval);
-                    return;
-                }
-                progress = Math.min(progress + 10 + Math.random() * 10, 90);
-                progressBar.style.width = progress + '%';
-            }, 300);
             
             // 倒计时功能
             let seconds = 3;
@@ -156,7 +199,6 @@
                 
                 if (seconds <= 0) {
                     clearInterval(countdownInterval);
-                    clearInterval(progressInterval);
                     window.location.href = targetUrl;
                 }
             }, 1000);
@@ -165,7 +207,6 @@
             redirectBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 clearInterval(countdownInterval);
-                clearInterval(progressInterval);
                 window.location.href = targetUrl;
             });
         } else {
