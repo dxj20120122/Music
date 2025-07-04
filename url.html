@@ -5,70 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src *; img-src * data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline'">
+    <meta name="referrer" content="no-referrer-when-downgrade">
     <title>安全跳转中 - 即将前往目标网站</title>
-    
-    <!-- 预连接优化 - 按优先级排序 -->
-    <link rel="preconnect" href="https://${targetDomain}" crossorigin>
-    <link rel="dns-prefetch" href="https://${targetDomain}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com">
-    <link rel="preconnect" href="https://www.google-analytics.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://unpkg.com">
-        <!-- 预连接优化 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://www.googletagmanager.com">
-    <link rel="preconnect" href="https://www.google-analytics.com">
-    <link rel="preconnect" href="https://cdn.jsdelivr.net">
-    <link rel="preconnect" href="https://unpkg.com">
-    <link rel="preconnect" href="https://cdn.bootcdn.net">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
-    <link rel="preconnect" href="https://code.jquery.com">
-    <link rel="preconnect" href="https://maxcdn.bootstrapcdn.com">
-    
-    <!-- Google Analytics -->
-    <link rel="prefetch" href="https://www.googletagmanager.com/gtag/js?id=UA-XXXXXX" as="script" crossorigin>
-    
-    <!-- jQuery 和相关插件 -->
-    <link rel="prefetch" href="https://code.jquery.com/jquery-3.6.0.min.js" as="script" crossorigin>
-    <link rel="prefetch" href="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js" as="script" crossorigin>
-    
-    <!-- Bootstrap -->
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" as="style">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" as="script">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" as="style">
-    
-    <!-- Vue.js 生态 -->
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.min.js" as="script">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/vue-router@4.0.12/dist/vue-router.global.min.js" as="script">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/pinia@2.0.13/dist/pinia.global.min.js" as="script">
-    
-    <!-- React 生态 -->
-    <link rel="prefetch" href="https://unpkg.com/react@18/umd/react.production.min.js" as="script">
-    <link rel="prefetch" href="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" as="script">
-    <link rel="prefetch" href="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.production.min.js" as="script">
-    
-    <!-- Google Fonts -->
-    <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" as="style" crossorigin>
-    <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap" as="style" crossorigin>
-    
-    <!-- 霞鹜文楷（BootCDN 托管） -->
-    <link rel="prefetch" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css" as="style" crossorigin>
-    
-    <!-- Font Awesome 图标 -->
-    <link rel="prefetch" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
-    
-    <!-- 常用CDN资源 -->
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js" as="script">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js" as="script">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/moment@2.29.1/moment.min.js" as="script">
-    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js" as="script">
-    
-    <!-- 常用分析工具 -->
-    <link rel="prefetch" href="https://www.google-analytics.com/analytics.js" as="script">
-    <link rel="prefetch" href="https://connect.facebook.net/en_US/fbevents.js" as="script">
     
     <!-- 关键CSS内联 -->
     <style>
@@ -401,9 +340,7 @@
         }
     </style>
     
-    <!-- 预加载关键资源 -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap" as="style" crossorigin>
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" as="style" crossorigin>
+    <!-- 预连接优化 - 动态添加 -->
 </head>
 
 <body>
@@ -426,6 +363,11 @@
         <div id="ssl-info" class="security-info safe" style="display:none;">
             <i class="bi bi-shield-check"></i>
             此网站使用 <strong>HTTPS 安全连接</strong>，数据传输已加密。
+        </div>
+        
+        <div id="phishing-warning" class="security-info" style="display:none;">
+            <i class="bi bi-exclamation-octagon"></i>
+            检测到潜在风险：<span id="warning-message"></span> 请谨慎访问。
         </div>
 
         <div class="progress-container">
@@ -460,6 +402,12 @@
             // 性能标记：记录开始时间
             const startTime = performance.now();
             
+            // 网络连接类型检测
+            const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+            const isSlowNetwork = connection ? 
+                (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g' || connection.saveData) : 
+                false;
+            
             // 获取URL参数的高效方法
             function getQueryParam(name) {
                 try {
@@ -473,9 +421,64 @@
             // 安全解码URL
             function safeDecodeURIComponent(str) {
                 try {
-                    return decodeURIComponent(str);
+                    return decodeURIComponent(str.replace(/\+/g, ' '));
                 } catch (e) {
                     return str;
+                }
+            }
+            
+            // 增强的URL验证函数
+            function validateUrl(url) {
+                try {
+                    const urlObj = new URL(url);
+                    
+                    // 检查协议
+                    if (!['http:', 'https:'].includes(urlObj.protocol)) {
+                        return { valid: false, reason: '不支持的协议' };
+                    }
+                    
+                    // 检查常见钓鱼域名特征
+                    const domain = urlObj.hostname;
+                    const suspiciousPatterns = [
+                        // 可疑TLDs
+                        /\.(tk|gq|ml|cf|xyz|top|club|site|online|tech|shop|store|fun)$/i,
+                        // IP地址
+                        /^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$/,
+                        // 特殊字符
+                        /[\u0300-\u036F\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]/,
+                        // 连续连字符
+                        /--/,
+                        // 子域名过多
+                        /^(.+\.){4,}/
+                    ];
+                    
+                    // 检查已知的钓鱼模式
+                    const phishingKeywords = [
+                        'login', 'signin', 'account', 'verify', 'secure', 
+                        'update', 'confirm', 'bank', 'paypal', 'ebay',
+                        'amazon', 'apple', 'microsoft', 'netflix', 'facebook'
+                    ];
+                    
+                    // 检查可疑模式
+                    const isSuspiciousDomain = suspiciousPatterns.some(pattern => pattern.test(domain));
+                    const hasPhishingKeyword = phishingKeywords.some(keyword => 
+                        domain.includes(keyword) && !domain.includes(`.${keyword}.`)
+                    );
+                    
+                    // 检查IDN同形字攻击
+                    const isIdnHomograph = /[^\x00-\x7F]/.test(domain) && 
+                                        domain !== domain.normalize('NFKC');
+                    
+                    if (isSuspiciousDomain || hasPhishingKeyword || isIdnHomograph) {
+                        return { 
+                            valid: true, 
+                            warning: '该域名可能不安全，请谨慎访问' 
+                        };
+                    }
+                    
+                    return { valid: true };
+                } catch (e) {
+                    return { valid: false, reason: 'URL格式不正确' };
                 }
             }
             
@@ -492,7 +495,9 @@
                 targetDomain: document.getElementById('target-domain'),
                 linkPreview: document.getElementById('link-preview'),
                 previewImage: document.getElementById('preview-image'),
-                previewTitle: document.getElementById('preview-title')
+                previewTitle: document.getElementById('preview-title'),
+                phishingWarning: document.getElementById('phishing-warning'),
+                warningMessage: document.getElementById('warning-message')
             };
             
             // 全局状态
@@ -506,7 +511,12 @@
                 hiddenIframe: null,
                 observer: null,
                 loadedResources: 0,
-                totalResources: 0
+                totalResources: 0,
+                criticalResourcesLoaded: false,
+                networkStatus: isSlowNetwork ? 'slow' : 'normal',
+                preloadedResources: new Set(),
+                resourcePriorities: new Map(), // 资源优先级映射
+                criticalResources: new Set() // 关键资源集合
             };
             
             // 初始化函数
@@ -521,6 +531,17 @@
                 elements.display.textContent = state.targetUrl;
                 elements.redirectBtn.href = state.targetUrl;
                 
+                // URL验证
+                const validation = validateUrl(state.targetUrl);
+                if (!validation.valid) {
+                    showError(validation.reason || '目标URL无效');
+                    return;
+                }
+                
+                if (validation.warning) {
+                    showWarning(validation.warning);
+                }
+                
                 try {
                     state.targetUrlObj = new URL(state.targetUrl);
                     analyzeTargetUrl();
@@ -528,10 +549,90 @@
                     startCountdown();
                     setupEventListeners();
                     fetchLinkPreview();
+                    
+                    // 根据网络状况调整策略
+                    if (state.networkStatus === 'slow') {
+                        adjustForSlowNetwork();
+                    }
+                    
+                    // 预加载关键资源
+                    preloadCriticalResources();
                 } catch (e) {
                     console.error('URL解析错误:', e);
                     showError('目标URL格式不正确');
                 }
+            }
+            
+            // 预加载关键资源
+            function preloadCriticalResources() {
+                if (!state.targetUrlObj) return;
+                
+                // 预加载目标页面的关键资源
+                const criticalResources = [
+                    // 主文档
+                    { url: state.targetUrl, type: 'document' },
+                    
+                    // 常见CSS框架
+                    { url: `${state.targetUrlObj.origin}/css/main.css`, type: 'style' },
+                    { url: `${state.targetUrlObj.origin}/css/styles.css`, type: 'style' },
+                    { url: `${state.targetUrlObj.origin}/assets/css/style.css`, type: 'style' },
+                    { url: `${state.targetUrlObj.origin}/static/css/main.css`, type: 'style' },
+                    
+                    // 常见JS框架
+                    { url: `${state.targetUrlObj.origin}/js/main.js`, type: 'script' },
+                    { url: `${state.targetUrlObj.origin}/js/app.js`, type: 'script' },
+                    { url: `${state.targetUrlObj.origin}/assets/js/app.js`, type: 'script' },
+                    { url: `${state.targetUrlObj.origin}/static/js/main.js`, type: 'script' },
+                    
+                    // 字体
+                    { url: `${state.targetUrlObj.origin}/fonts/font.woff2`, type: 'font' },
+                    
+                    // 图标
+                    { url: `${state.targetUrlObj.origin}/favicon.ico`, type: 'image' }
+                ];
+                
+                criticalResources.forEach(resource => {
+                    if (state.preloadedResources.has(resource.url)) return;
+                    
+                    state.preloadedResources.add(resource.url);
+                    state.criticalResources.add(resource.url);
+                    
+                    const link = document.createElement('link');
+                    link.rel = 'preload';
+                    link.href = resource.url;
+                    link.as = resource.type;
+                    
+                    if (resource.type === 'font') {
+                        link.crossOrigin = 'anonymous';
+                    }
+                    
+                    document.head.appendChild(link);
+                });
+            }
+            
+            // 慢速网络调整
+            function adjustForSlowNetwork() {
+                // 减少预加载资源数量
+                state.countdown = Math.max(state.countdown, 8); // 延长等待时间
+                elements.countdown.textContent = state.countdown;
+                
+                // 更新状态提示
+                elements.status.innerHTML = `
+                    <i class="bi bi-wifi-off"></i>
+                    <span>检测到慢速网络，优化加载策略...</span>
+                `;
+                
+                // 取消非关键资源的预加载
+                if (state.hiddenIframe) {
+                    state.hiddenIframe.src = '';
+                }
+                
+                // 只保留关键资源的预加载
+                document.querySelectorAll('link[rel="preload"]').forEach(link => {
+                    if (!state.criticalResources.has(link.href)) {
+                        link.remove();
+                    }
+                });
             }
             
             // 分析目标URL
@@ -550,6 +651,12 @@
                 
                 // 添加预连接
                 addPreconnects();
+            }
+            
+            // 显示警告
+            function showWarning(message) {
+                elements.warningMessage.textContent = message;
+                elements.phishingWarning.style.display = 'block';
             }
             
             // 添加预连接
@@ -589,6 +696,7 @@
                 state.hiddenIframe.style.display = 'none';
                 state.hiddenIframe.src = state.targetUrl;
                 state.hiddenIframe.loading = 'eager';
+                state.hiddenIframe.sandbox = 'allow-same-origin allow-scripts'; // 沙箱限制
                 document.body.appendChild(state.hiddenIframe);
                 
                 // 使用PerformanceObserver监控资源加载
@@ -597,14 +705,42 @@
                     state.totalResources = Math.min(entries.length, 200); // 限制最大数量
                     
                     // 计算与目标域名相关的资源
-                    state.loadedResources = entries.filter(entry => {
+                    const relevantEntries = entries.filter(entry => {
                         try {
                             const url = new URL(entry.name);
                             return url.hostname === state.targetUrlObj.hostname;
                         } catch {
                             return false;
                         }
-                    }).length;
+                    });
+                    
+                    state.loadedResources = relevantEntries.length;
+                    
+                    // 更新资源优先级
+                    relevantEntries.forEach(entry => {
+                        const priority = calculateResourcePriority(entry);
+                        state.resourcePriorities.set(entry.name, priority);
+                        
+                        // 标记关键资源
+                        if (priority >= 0.8 && !state.criticalResources.has(entry.name)) {
+                            state.criticalResources.add(entry.name);
+                        }
+                    });
+                    
+                    // 检查关键资源是否已加载
+                    if (!state.criticalResourcesLoaded) {
+                        const criticalLoaded = Array.from(state.criticalResources).filter(resource => {
+                            return relevantEntries.some(entry => entry.name === resource);
+                        }).length;
+                        
+                        if (criticalLoaded >= Math.max(1, state.criticalResources.size * 0.6)) {
+                            state.criticalResourcesLoaded = true;
+                            elements.status.innerHTML = `
+                                <i class="bi bi-check-circle"></i>
+                                <span>关键资源已加载，准备跳转...</span>
+                            `;
+                        }
+                    }
                     
                     updateProgress();
                 });
@@ -628,18 +764,73 @@
                 };
             }
             
+            // 计算资源优先级
+            function calculateResourcePriority(entry) {
+                let priority = 0.5; // 默认优先级
+                
+                // 根据资源类型调整优先级
+                if (entry.initiatorType === 'link' && entry.name.endsWith('.css')) {
+                    priority = 0.9; // CSS高优先级
+                } else if (entry.initiatorType === 'script') {
+                    priority = entry.name.includes('main.') || entry.name.includes('app.') ? 0.8 : 0.6;
+                } else if (entry.initiatorType === 'img') {
+                    // 首屏图片优先级更高
+                    priority = isLargestImage(entry) ? 0.7 : 0.4;
+                } else if (entry.initiatorType === 'css') {
+                    priority = 0.9;
+                }
+                
+                // 根据大小调整优先级 - 小文件优先
+                if (entry.decodedBodySize) {
+                    const sizeMB = entry.decodedBodySize / (1024 * 1024);
+                    if (sizeMB > 1) priority *= 0.7; // 大文件降权
+                    else if (sizeMB < 0.1) priority *= 1.2; // 小文件加权
+                }
+                
+                return Math.min(Math.max(priority, 0.1), 1.0);
+            }
+            
+            // 检查是否是最大的图片资源
+            function isLargestImage(entry) {
+                if (entry.initiatorType !== 'img') return false;
+                
+                const allImages = performance.getEntriesByType('resource')
+                    .filter(e => e.initiatorType === 'img');
+                
+                if (allImages.length === 0) return true;
+                
+                const maxSize = Math.max(...allImages.map(img => img.decodedBodySize || 0));
+                return entry.decodedBodySize === maxSize;
+            }
+            
             // 更新进度条
             function updateProgress() {
-                const progress = Math.min(
-                    Math.floor((state.loadedResources / Math.max(state.totalResources, 1)) * 100),
-                    95 // 留5%给页面完全加载
-                );
+                // 计算加权进度，考虑资源优先级
+                let weightedProgress = 0;
+                let totalWeight = 0;
+                
+                state.resourcePriorities.forEach((priority, resource) => {
+                    const isLoaded = performance.getEntriesByName(resource).length > 0;
+                    if (isLoaded) {
+                        weightedProgress += priority;
+                    }
+                    totalWeight += priority;
+                });
+                
+                const progress = totalWeight > 0 ? 
+                    Math.min(Math.floor((weightedProgress / totalWeight) * 100), 95) : 
+                    Math.min(Math.floor((state.loadedResources / Math.max(state.totalResources, 1)) * 100), 95);
                 
                 elements.progressBar.style.width = progress + '%';
                 
                 if (progress >= 95 && state.isPreloaded) {
                     elements.progressBar.style.width = '100%';
                     elements.status.innerHTML = '<i class="bi bi-check-circle"></i> 目标页面已预加载完成';
+                } else if (state.criticalResourcesLoaded) {
+                    elements.status.innerHTML = `
+                        <i class="bi bi-lightning"></i>
+                        <span>已加载 ${state.loadedResources} 个资源，准备就绪...</span>
+                    `;
                 } else {
                     elements.status.innerHTML = `
                         <span class="loading-spinner"></span>
@@ -650,30 +841,48 @@
             
             // 从iframe提取资源进行预加载
             function extractIframeResources() {
+                if (state.networkStatus === 'slow') return; // 慢速网络不提取额外资源
+                
                 try {
                     const iframeDoc = state.hiddenIframe.contentDocument || state.hiddenIframe.contentWindow.document;
                     const resources = new Set();
                     
-                    // 收集CSS资源
+                    // 收集关键CSS资源
                     Array.from(iframeDoc.querySelectorAll('link[rel="stylesheet"]')).forEach(link => {
-                        resources.add(link.href);
+                        if (link.media === 'all' || !link.media) {
+                            resources.add(link.href);
+                        }
                     });
                     
-                    // 收集JS资源
+                    // 收集关键JS资源
                     Array.from(iframeDoc.querySelectorAll('script[src]')).forEach(script => {
-                        resources.add(script.src);
+                        if (!script.defer && !script.async) {
+                            resources.add(script.src);
+                        }
                     });
                     
-                    // 收集图片资源
+                    // 收集首屏图片资源
                     Array.from(iframeDoc.querySelectorAll('img[src]')).forEach(img => {
-                        if (!img.src.startsWith('data:')) {
+                        if (isInViewport(img) && !img.src.startsWith('data:')) {
                             resources.add(img.src);
+                        }
+                    });
+                    
+                    // 收集关键字体资源
+                    Array.from(iframeDoc.querySelectorAll('link[rel="stylesheet"]')).forEach(link => {
+                        if (link.href && link.href.endsWith('.css')) {
+                            // 提取CSS中的字体资源
+                            extractFontsFromCSS(link.href).then(fonts => {
+                                fonts.forEach(font => resources.add(font));
+                            });
                         }
                     });
                     
                     // 预加载收集到的资源
                     resources.forEach(resource => {
-                        if (!resource || !resource.startsWith('http')) return;
+                        if (!resource || !resource.startsWith('http') || state.preloadedResources.has(resource)) return;
+                        
+                        state.preloadedResources.add(resource);
                         
                         const link = document.createElement('link');
                         link.rel = 'prefetch';
@@ -687,6 +896,8 @@
                             link.as = 'image';
                         } else if (/\.(woff2?|ttf|eot)$/i.test(resource)) {
                             link.as = 'font';
+                        } else if (resource.endsWith('.wasm')) {
+                            link.as = 'fetch';
                         }
                         
                         document.head.appendChild(link);
@@ -696,21 +907,89 @@
                 }
             }
             
+            // 从CSS中提取字体资源
+            async function extractFontsFromCSS(cssUrl) {
+                try {
+                    const response = await fetch(cssUrl);
+                    const cssText = await response.text();
+                    const fontUrls = [];
+                    
+                    // 简单匹配字体URL
+                    const fontRegex = /url\(['"]?([^)'"]+\.(woff2?|ttf|eot))['"]?\)/gi;
+                    let match;
+                    
+                    while ((match = fontRegex.exec(cssText)) !== null) {
+                        let fontUrl = match[1];
+                        
+                        // 处理相对路径
+                        if (!fontUrl.startsWith('http')) {
+                            const baseUrl = cssUrl.substring(0, cssUrl.lastIndexOf('/') + 1);
+                            fontUrl = new URL(fontUrl, baseUrl).href;
+                        }
+                        
+                        fontUrls.push(fontUrl);
+                    }
+                    
+                    return fontUrls;
+                } catch (e) {
+                    console.error('提取字体失败:', e);
+                    return [];
+                }
+            }
+            
+            // 检查元素是否在视口中
+            function isInViewport(element) {
+                try {
+                    const rect = element.getBoundingClientRect();
+                    return (
+                        rect.top >= 0 &&
+                        rect.left >= 0 &&
+                        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+                    );
+                } catch (e) {
+                    return false;
+                }
+            }
+            
             // 获取链接预览
             function fetchLinkPreview() {
-                if (!state.targetUrlObj) return;
+                if (!state.targetUrlObj || state.networkStatus === 'slow') return;
                 
                 // 使用后端API获取预览更安全，这里只是示例
-                // 实际项目中应该使用自己的后端服务
-                const proxyUrl = `https://api.linkpreview.net/?key=123456&q=${encodeURIComponent(state.targetUrl)}`;
+                const proxyUrl = `/api/preview?url=${encodeURIComponent(state.targetUrl)}`;
                 
-                fetch(proxyUrl)
-                    .then(response => response.json())
+                // 使用AbortController设置超时
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 2000);
+                
+                fetch(proxyUrl, { 
+                    signal: controller.signal,
+                    priority: 'low' // 低优先级请求
+                })
+                    .then(response => {
+                        clearTimeout(timeout);
+                        if (!response.ok) throw new Error('预览获取失败');
+                        return response.json();
+                    })
                     .then(data => {
                         if (data.image && data.title) {
-                            elements.previewImage.src = data.image;
-                            elements.previewTitle.textContent = data.title;
-                            elements.linkPreview.style.display = 'block';
+                            // 使用IntersectionObserver延迟加载图片
+                            const observer = new IntersectionObserver((entries) => {
+                                if (entries[0].isIntersecting) {
+                                    elements.previewImage.src = data.image;
+                                    elements.previewImage.onload = () => {
+                                        elements.previewTitle.textContent = data.title;
+                                        elements.linkPreview.style.display = 'block';
+                                    };
+                                    observer.unobserve(elements.previewImage);
+                                }
+                            }, {
+                                threshold: 0.1,
+                                rootMargin: '200px' // 提前200px加载
+                            });
+                            
+                            observer.observe(elements.linkPreview);
                         }
                     })
                     .catch(() => {
@@ -720,7 +999,11 @@
             
             // 开始倒计时
             function startCountdown() {
-                state.countdown = state.isSafe ? 3 : 5; // HTTPS网站等待时间更短
+                // 根据网络状况和安全状态调整倒计时
+                state.countdown = state.isSafe ? 
+                    (state.networkStatus === 'slow' ? 5 : 3) : 
+                    (state.networkStatus === 'slow' ? 8 : 5);
+                
                 elements.countdown.textContent = state.countdown;
                 
                 state.timer = setInterval(() => {
@@ -739,6 +1022,19 @@
                 // 记录跳转时间
                 const loadTime = (performance.now() - startTime).toFixed(2);
                 console.log(`跳转准备完成，总耗时: ${loadTime}ms`);
+                
+                // 发送跳转前信标
+                const analyticsData = new Blob([JSON.stringify({
+                    url: state.targetUrl,
+                    loadTime: loadTime,
+                    resourcesLoaded: state.loadedResources,
+                    preloaded: state.isPreloaded,
+                    networkType: state.networkStatus,
+                    criticalResources: Array.from(state.criticalResources),
+                    resourcePriorities: Array.from(state.resourcePriorities.entries())
+                })], { type: 'application/json' });
+                
+                navigator.sendBeacon('/api/redirect-analytics', analyticsData);
                 
                 // 使用location.replace避免回退到跳转页面
                 window.location.replace(state.targetUrl);
@@ -779,37 +1075,53 @@
                     }
                 });
                 
+                // 网络状态变化监听
+                if (connection) {
+                    connection.addEventListener('change', () => {
+                        const newNetworkStatus = connection.effectiveType === 'slow-2g' || 
+                                              connection.effectiveType === '2g' || 
+                                              connection.saveData ? 'slow' : 'normal';
+                        
+                        if (newNetworkStatus !== state.networkStatus) {
+                            state.networkStatus = newNetworkStatus;
+                            adjustForSlowNetwork();
+                        }
+                    });
+                }
+                
                 // 预加载常用资源
                 setTimeout(prefetchCommonResources, 300);
             }
             
             // 预加载常用资源
             function prefetchCommonResources() {
+                if (state.networkStatus === 'slow') return;
+                
                 const commonResources = [
                     // 常用JS库
-                    'https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js',
-                    'https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js',
-                    'https://cdn.jsdelivr.net/npm/dayjs@1.11.3/dayjs.min.js',
+                    { url: 'https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js', type: 'script' },
+                    { url: 'https://cdn.jsdelivr.net/npm/axios@0.27.2/dist/axios.min.js', type: 'script' },
+                    { url: 'https://cdn.jsdelivr.net/npm/dayjs@1.11.3/dayjs.min.js', type: 'script' },
                     
                     // 常用CSS
-                    'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css',
-                    'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap',
+                    { url: 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css', type: 'style' },
+                    { url: 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500&display=swap', type: 'style' },
                     
                     // 常用字体
-                    'https://fonts.gstatic.com/s/notosanssc/v12/k3kXo84MPvpLmixcA63oeALhLOCT-xWNm8Hqd37g1Ok.woff2'
+                    { url: 'https://fonts.gstatic.com/s/notosanssc/v12/k3kXo84MPvpLmixcA63oeALhLOCT-xWNm8Hqd37g1Ok.woff2', type: 'font' }
                 ];
                 
                 commonResources.forEach(resource => {
+                    if (state.preloadedResources.has(resource.url)) return;
+                    
+                    state.preloadedResources.add(resource.url);
+                    
                     const link = document.createElement('link');
                     link.rel = 'prefetch';
-                    link.href = resource;
+                    link.href = resource.url;
+                    link.as = resource.type;
                     
-                    if (resource.endsWith('.js')) {
-                        link.as = 'script';
-                    } else if (resource.endsWith('.css')) {
-                        link.as = 'style';
-                    } else if (resource.endsWith('.woff2')) {
-                        link.as = 'font';
+                    if (resource.type === 'font') {
                         link.crossOrigin = 'anonymous';
                     }
                     
@@ -826,14 +1138,42 @@
                 elements.progressBar.style.width = '0%';
             }
             
+            // 注册Service Worker
+            function registerServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/sw.js', {
+                        scope: '/'
+                    }).then(registration => {
+                        console.log('ServiceWorker 注册成功:', registration.scope);
+                        
+                        // 使用Service Worker预缓存资源
+                        if (registration.active) {
+                            registration.active.postMessage({
+                                type: 'PRECACHE_RESOURCES',
+                                resources: Array.from(state.criticalResources)
+                            });
+                        }
+                    }).catch(err => {
+                        console.log('ServiceWorker 注册失败:', err);
+                    });
+                }
+            }
+            
             // 启动初始化
+            registerServiceWorker();
             init();
         })();
     </script>
     
     <!-- 延迟加载非关键CSS -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap" crossorigin>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap" crossorigin media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" crossorigin media="print" onload="this.media='all'">
+    
+    <!-- 备用方案，当JavaScript禁用时 -->
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    </noscript>
 </body>
 
 </html>
