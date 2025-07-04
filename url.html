@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面跳转中</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            padding: 40px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 300;
+        }
+        .url-display {
+            margin: 25px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            word-break: break-all;
+            font-family: monospace;
+            color: #2980b9;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .countdown {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        .logo {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 300;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">跳转服务</div>
+        <h1>您即将离开当前页面</h1>
+        <p>系统将在 <span id="countdown">3</span> 秒后自动跳转到目标网址</p>
+        <div class="url-display" id="target-url"></div>
+        <a href="#" class="btn" id="manual-redirect">立即跳转</a>
+        <div class="countdown">如果跳转未自动进行，请点击上方按钮</div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 解码URL并显示
+        const targetUrl = decodeURIComponent(getQueryParam('url') || '');
+        const displayElement = document.getElementById('target-url');
+        const redirectBtn = document.getElementById('manual-redirect');
+        
+        if (targetUrl) {
+            displayElement.textContent = targetUrl;
+            redirectBtn.href = targetUrl;
+            
+            // 倒计时功能
+            let seconds = 3;
+            const countdownElement = document.getElementById('countdown');
+            
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = targetUrl;
+                }
+            }, 1000);
+            
+            // 手动跳转按钮
+            redirectBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                clearInterval(countdownInterval);
+                window.location.href = targetUrl;
+            });
+        } else {
+            displayElement.textContent = '未提供跳转URL';
+            redirectBtn.style.display = 'none';
+            document.getElementById('countdown').textContent = '0';
+        }
+    </script>
+</body>
+</html>
