@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,32 @@
     <!-- 预连接优化 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Google Analytics -->
+    <link rel="prefetch" href="https://www.googletagmanager.com/gtag/js?id=UA-XXXXXX" as="script" crossorigin>
+    <!-- jQuery -->
+    <link rel="prefetch" href="https://code.jquery.com/jquery-3.6.0.min.js" as="script" crossorigin>
+
+    <!-- Bootstrap -->
+    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" as="style">
+    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+        as="script">
+
+    <!-- Vue.js -->
+    <link rel="prefetch" href="https://cdn.jsdelivr.net/npm/vue@3.2.31/dist/vue.global.min.js" as="script">
+
+    <!-- React -->
+    <link rel="prefetch" href="https://unpkg.com/react@18/umd/react.production.min.js" as="script">
+    <link rel="prefetch" href="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" as="script">
+    <!-- Google Fonts（预加载 CSS 文件） -->
+    <link rel="prefetch" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" as="style"
+        crossorigin>
+
+    <!-- 霞鹜文楷（BootCDN 托管） -->
+    <link rel="prefetch" href="https://cdn.bootcdn.net/ajax/libs/lxgw-wenkai-screen-webfont/1.7.0/style.min.css"
+        as="style" crossorigin>
+
+    <!-- Font Awesome 图标 -->
+    <link rel="prefetch" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" as="style">
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -21,6 +48,7 @@
             text-align: center;
             line-height: 1.6;
         }
+
         .container {
             max-width: 600px;
             padding: 40px;
@@ -28,11 +56,13 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
+
         h1 {
             color: #2c3e50;
             margin-bottom: 20px;
             font-weight: 300;
         }
+
         .url-display {
             margin: 25px 0;
             padding: 15px;
@@ -42,6 +72,7 @@
             font-family: monospace;
             color: #2980b9;
         }
+
         .btn {
             display: inline-block;
             padding: 10px 20px;
@@ -52,20 +83,24 @@
             transition: background-color 0.3s;
             font-size: 16px;
         }
+
         .btn:hover {
             background-color: #2980b9;
         }
+
         .countdown {
             margin-top: 20px;
             font-size: 14px;
             color: #7f8c8d;
         }
+
         .logo {
             margin-bottom: 20px;
             font-size: 24px;
             font-weight: 300;
             color: #2c3e50;
         }
+
         .progress-container {
             width: 100%;
             height: 4px;
@@ -74,12 +109,14 @@
             border-radius: 2px;
             overflow: hidden;
         }
+
         .progress-bar {
             height: 100%;
             background-color: #3498db;
             width: 0%;
             transition: width 0.3s;
         }
+
         .status {
             font-size: 14px;
             color: #7f8c8d;
@@ -87,18 +124,19 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo">跳转服务</div>
         <h1>您即将离开当前页面</h1>
         <p>系统将在 <span id="countdown">3</span> 秒后自动跳转到目标网址</p>
         <div class="url-display" id="target-url"></div>
-        
+
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
         <div class="status" id="status">正在预加载目标页面...</div>
-        
+
         <a href="#" class="btn" id="manual-redirect">立即跳转</a>
         <div class="countdown">如果跳转未自动进行，请点击上方按钮</div>
     </div>
@@ -116,93 +154,93 @@
         const redirectBtn = document.getElementById('manual-redirect');
         const progressBar = document.getElementById('progress-bar');
         const statusElement = document.getElementById('status');
-        
+
         if (targetUrl) {
             displayElement.textContent = targetUrl;
             redirectBtn.href = targetUrl;
-            
+
             try {
                 // 解析目标URL的域名用于preconnect
                 const targetDomain = new URL(targetUrl).origin;
-                
+
                 // 添加preconnect优化
                 const preconnectLink = document.createElement('link');
                 preconnectLink.rel = 'preconnect';
                 preconnectLink.href = targetDomain;
                 document.head.appendChild(preconnectLink);
-                
+
                 // 添加dns-prefetch作为后备
                 const dnsPrefetchLink = document.createElement('link');
                 dnsPrefetchLink.rel = 'dns-prefetch';
                 dnsPrefetchLink.href = targetDomain;
                 document.head.appendChild(dnsPrefetchLink);
-                
+
                 // 预加载目标页面HTML
                 const preloadLink = document.createElement('link');
                 preloadLink.rel = 'preload';
                 preloadLink.href = targetUrl;
                 preloadLink.as = 'document';
                 document.head.appendChild(preloadLink);
-            } catch(e) {
+            } catch (e) {
                 console.log('预连接优化失败:', e);
             }
-            
+
             // 预加载目标页面
             let preloaded = false;
             const hiddenIframe = document.createElement('iframe');
             hiddenIframe.style.display = 'none';
             hiddenIframe.src = targetUrl;
             document.body.appendChild(hiddenIframe);
-            
+
             // 真实进度跟踪
             let loadedResources = 0;
             let totalResources = 0;
-            
+
             // 使用PerformanceObserver监控资源加载
             const observer = new PerformanceObserver((list) => {
                 const entries = list.getEntries();
                 totalResources = entries.length;
-                
+
                 entries.forEach(entry => {
                     if (entry.initiatorType !== 'iframe') return;
-                    
+
                     loadedResources++;
                     const realProgress = Math.min(
-                        Math.floor((loadedResources / Math.max(totalResources, 1)) * 100), 
+                        Math.floor((loadedResources / Math.max(totalResources, 1)) * 100),
                         90
                     );
                     progressBar.style.width = realProgress + '%';
                 });
             });
-            
+
             observer.observe({ entryTypes: ['resource'] });
-            
-            hiddenIframe.onload = function() {
+
+            hiddenIframe.onload = function () {
                 preloaded = true;
                 progressBar.style.width = '100%';
                 statusElement.textContent = '目标页面已预加载完成';
                 observer.disconnect();
             };
-            
-            hiddenIframe.onerror = function() {
+
+            hiddenIframe.onerror = function () {
                 statusElement.textContent = '预加载失败，但仍可跳转';
                 observer.disconnect();
             };
-            
+
             // 倒计时功能
             let seconds = 3;
             const countdownElement = document.getElementById('countdown');
-            
+
             const countdownInterval = setInterval(() => {
                 seconds--;
                 countdownElement.textContent = seconds;
-                
+
                 if (seconds <= 0) {
                     clearInterval(countdownInterval);
                     window.location.href = targetUrl;
                 }
             }, 1000);
-            
+
             // 手动跳转按钮
             redirectBtn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -217,4 +255,5 @@
         }
     </script>
 </body>
+
 </html>
