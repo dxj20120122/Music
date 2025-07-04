@@ -1,17 +1,93 @@
+
 // 定义全局变量
 let allSongs = [];
 let currentPage = 1;
 const songsPerPage = 10; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
+let observer;
+let visibleCards = new Set();
+const preloadDistance = 500; // 预加载距离（像素）
+
+// 初始化Intersection Observer
+function initObserver() {
+    if (observer) observer.disconnect();
+
+    observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const card = entry.target;
+                const img = card.querySelector('.lazy-image');
+
+                if (img && img.dataset.src) {
+                    loadImage(img);
+                    visibleCards.add(card.dataset.id);
+                }
+
+                // 检查是否需要预加载附近的卡片
+                preloadNearbyCards(card);
+            }
+        });
+    }, {
+        rootMargin: `${preloadDistance}px 0px`,
+        threshold: 0.01
+    });
+
+    // 观察所有卡片
+    document.querySelectorAll('.song-card').forEach(card => {
+        observer.observe(card);
+    });
+}
+
+// 加载图片
+function loadImage(img) {
+    if (img.getAttribute('src') === img.dataset.src) return;
+
+    const src = img.dataset.src;
+    const tempImg = new Image();
+
+    tempImg.onload = () => {
+        img.src = src;
+        img.classList.add('loaded');
+    };
+
+    tempImg.onerror = () => {
+        console.error('Failed to load image:', src);
+    };
+
+    tempImg.src = src;
+}
+
+// 预加载附近的卡片
+function preloadNearbyCards(currentCard) {
+    const cards = Array.from(document.querySelectorAll('.song-card'));
+    const currentIndex = cards.indexOf(currentCard);
+
+    if (currentIndex === -1) return;
+
+    // 预加载前后各2张卡片
+    const start = Math.max(0, currentIndex - 2);
+    const end = Math.min(cards.length - 1, currentIndex + 2);
+
+    for (let i = start; i <= end; i++) {
+        const card = cards[i];
+        if (!visibleCards.has(card.dataset.id)) {
+            const img = card.querySelector('.lazy-image');
+            if (img && img.dataset.src) {
+                loadImage(img);
+                visibleCards.add(card.dataset.id);
+            }
+        }
+    }
+}
 
 // 从songs.json加载歌曲数据
 async function loadSongs(page = 1) {
     if (isLoading || !hasMoreSongs) return [];
-    
+
     isLoading = true;
     showLoadingIndicator();
-    
+
     try {
         // 首先从主songs.json获取歌曲名列表
         const response = await fetch('songs.json');
@@ -19,12 +95,12 @@ async function loadSongs(page = 1) {
             throw new Error('无法加载歌曲列表');
         }
         const allSongNames = await response.json();
-        
+
         // 计算当前页的歌曲范围
         const startIndex = (page - 1) * songsPerPage;
         const endIndex = startIndex + songsPerPage;
         const songNames = allSongNames.slice(startIndex, endIndex);
-        
+
         // 如果没有歌曲了，设置标志位
         if (songNames.length === 0) {
             hasMoreSongs = false;
@@ -32,7 +108,7 @@ async function loadSongs(page = 1) {
             isLoading = false;
             return [];
         }
-        
+
         // 为每个歌曲名创建一个Promise来获取详细信息
         const songPromises = songNames.map(async (songName, index) => {
             try {
@@ -70,14 +146,14 @@ async function loadSongs(page = 1) {
 
         // 过滤掉null值
         const newSongs = songsWithDetails.filter(song => song !== null);
-        
+
         // 更新全局变量
         if (page === 1) {
             allSongs = newSongs;
         } else {
             allSongs = [...allSongs, ...newSongs];
         }
-        
+
         currentPage = page;
         return newSongs;
     } catch (error) {
@@ -111,7 +187,7 @@ function checkScroll() {
     const scrollPosition = window.innerHeight + window.scrollY;
     const pageHeight = document.documentElement.scrollHeight;
     const threshold = 500; // 提前500px加载
-    
+
     // 如果接近底部且有更多歌曲可加载，并且当前没有正在加载
     if (scrollPosition > pageHeight - threshold && !isLoading && hasMoreSongs) {
         loadMoreSongs();
@@ -123,6 +199,7 @@ async function loadMoreSongs() {
     const newSongs = await loadSongs(currentPage + 1);
     if (newSongs.length > 0) {
         displaySongs(allSongs);
+        initObserver(); // 重新初始化Observer以观察新卡片
     }
 }
 
@@ -136,12 +213,13 @@ function formatTime(seconds) {
 // 显示歌曲卡片
 function displaySongs(songs) {
     const songGrid = document.getElementById('songGrid');
-    
+
     // 如果是第一页，清空网格
     if (currentPage === 1) {
         songGrid.innerHTML = '';
+        visibleCards.clear();
     }
-    
+
     // 移除之前的加载指示器（如果有）
     hideLoadingIndicator();
 
@@ -155,7 +233,7 @@ function displaySongs(songs) {
         if (document.querySelector(`.song-card[data-id="${song.id}"]`)) {
             return;
         }
-        
+
         const card = document.createElement('div');
         card.className = 'song-card';
         card.dataset.id = song.id;
@@ -189,23 +267,31 @@ function displaySongs(songs) {
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
         card.innerHTML = `
-            <div class="song-image" style="${song.cover ? '' : `background: ${randomColor}`}">
-                ${song.cover ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
-                <button class="play-button">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="favorite-button" data-id="${song.id}">
-                    <i class="fas fa-heart"></i>
-                </button>
-                <button class="add-to-playlist-button" data-id="${song.id}">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
-            <div class="song-info">
-                <div class="song-title" title="${song.title}">${song.title}</div>
-                <div class="song-artist">${song.artist}</div>
-            </div>
-        `;
+                    <div class="song-image" style="${song.cover ? '' : `background: ${randomColor}`}">
+                        ${song.cover ? `
+                            <img 
+                                src="placeholder.jpg"
+                                data-src="${song.folderName}/${song.cover}" 
+                                alt="${song.title}" 
+                                class="lazy-image"
+                                style="width:100%;height:100%;object-fit:cover;"
+                            >
+                        ` : song.title.charAt(0)}
+                        <button class="play-button">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="favorite-button" data-id="${song.id}">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <button class="add-to-playlist-button" data-id="${song.id}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="song-info">
+                        <div class="song-title" title="${song.title}">${song.title}</div>
+                        <div class="song-artist">${song.artist}</div>
+                    </div>
+                `;
 
         // 添加点击事件，播放歌曲预览
         const playBtn = card.querySelector('.play-button');
@@ -263,6 +349,9 @@ function displaySongs(songs) {
 
         songGrid.appendChild(card);
     });
+
+    // 初始化Observer
+    initObserver();
 }
 
 // 播放歌曲预览
@@ -533,20 +622,20 @@ async function updateFavoritesList() {
             const item = document.createElement('div');
             item.className = 'favorite-item';
             item.innerHTML = `
-                <div class="favorite-item-image" style="background: ${randomColor}">${song.title.charAt(0)}</div>
-                <div class="favorite-item-info">
-                    <div class="favorite-item-title">${song.title}</div>
-                    <div class="favorite-item-artist">${song.artist}</div>
-                </div>
-                <div class="favorite-item-actions">
-                    <button class="favorite-action-button play-favorite" data-id="${song.id}">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="favorite-action-button remove-favorite" data-id="${song.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
+                        <div class="favorite-item-image" style="background: ${randomColor}">${song.title.charAt(0)}</div>
+                        <div class="favorite-item-info">
+                            <div class="favorite-item-title">${song.title}</div>
+                            <div class="favorite-item-artist">${song.artist}</div>
+                        </div>
+                        <div class="favorite-item-actions">
+                            <button class="favorite-action-button play-favorite" data-id="${song.id}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="favorite-action-button remove-favorite" data-id="${song.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
 
             // 播放收藏歌曲
             const playBtn = item.querySelector('.play-favorite');
@@ -736,20 +825,20 @@ function updatePlaylistList() {
             item.className = 'playlist-item';
             item.dataset.id = playlist.id;
             item.innerHTML = `
-                <div class="playlist-item-image" style="background: ${randomColor}">${playlist.name.charAt(0)}</div>
-                <div class="playlist-item-info">
-                    <div class="playlist-item-title">${playlist.name}</div>
-                    <div class="playlist-item-count">${playlist.songs.length} 首歌曲</div>
-                </div>
-                <div class="playlist-item-actions">
-                    <button class="playlist-action-button view-playlist" data-id="${playlist.id}">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="playlist-action-button delete-playlist" data-id="${playlist.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
+                        <div class="playlist-item-image" style="background: ${randomColor}">${playlist.name.charAt(0)}</div>
+                        <div class="playlist-item-info">
+                            <div class="playlist-item-title">${playlist.name}</div>
+                            <div class="playlist-item-count">${playlist.songs.length} 首歌曲</div>
+                        </div>
+                        <div class="playlist-item-actions">
+                            <button class="playlist-action-button view-playlist" data-id="${playlist.id}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="playlist-action-button delete-playlist" data-id="${playlist.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
 
             // 查看歌单
             const viewBtn = item.querySelector('.view-playlist');
@@ -885,20 +974,20 @@ async function updatePlaylistSongsList(playlistId, order = 'list') {
             item.className = 'playlist-song-item';
             item.dataset.id = song.id;
             item.innerHTML = `
-                <div class="playlist-song-item-image" style="background: ${randomColor}">${song.title.charAt(0)}</div>
-                <div class="playlist-song-item-info">
-                    <div class="playlist-song-item-title">${song.title}</div>
-                    <div class="playlist-song-item-artist">${song.artist}</div>
-                </div>
-                <div class="playlist-song-item-actions">
-                    <button class="playlist-song-action-button play-song" data-id="${song.id}">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="playlist-song-action-button remove-from-playlist" data-id="${song.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
+                        <div class="playlist-song-item-image" style="background: ${randomColor}">${song.title.charAt(0)}</div>
+                        <div class="playlist-song-item-info">
+                            <div class="playlist-song-item-title">${song.title}</div>
+                            <div class="playlist-song-item-artist">${song.artist}</div>
+                        </div>
+                        <div class="playlist-song-item-actions">
+                            <button class="playlist-song-action-button play-song" data-id="${song.id}">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="playlist-song-action-button remove-from-playlist" data-id="${song.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
 
             // 播放歌曲
             const playBtn = item.querySelector('.play-song');
@@ -987,17 +1076,17 @@ function updateAddToPlaylistList(song) {
             item.className = 'playlist-item';
             item.dataset.id = playlist.id;
             item.innerHTML = `
-                <div class="playlist-item-image" style="background: ${randomColor}">${playlist.name.charAt(0)}</div>
-                <div class="playlist-item-info">
-                    <div class="playlist-item-title">${playlist.name}</div>
-                    <div class="playlist-item-count">${playlist.songs.length} 首歌曲</div>
-                </div>
-                <div class="playlist-item-actions">
-                    <button class="playlist-action-button ${isInPlaylist ? 'remove-from-playlist' : 'add-to-playlist'}" data-id="${playlist.id}">
-                        <i class="fas ${isInPlaylist ? 'fa-check' : 'fa-plus'}"></i>
-                    </button>
-                </div>
-            `;
+                        <div class="playlist-item-image" style="background: ${randomColor}">${playlist.name.charAt(0)}</div>
+                        <div class="playlist-item-info">
+                            <div class="playlist-item-title">${playlist.name}</div>
+                            <div class="playlist-item-count">${playlist.songs.length} 首歌曲</div>
+                        </div>
+                        <div class="playlist-item-actions">
+                            <button class="playlist-action-button ${isInPlaylist ? 'remove-from-playlist' : 'add-to-playlist'}" data-id="${playlist.id}">
+                                <i class="fas ${isInPlaylist ? 'fa-check' : 'fa-plus'}"></i>
+                            </button>
+                        </div>
+                    `;
 
             // 添加/移除歌曲
             const actionBtn = item.querySelector('.playlist-action-button');

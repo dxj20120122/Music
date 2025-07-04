@@ -1182,6 +1182,53 @@ h1 {
     animation: spin 1s ease-in-out infinite;
 }
 
+/* 新增的图片加载相关样式 */
+.lazy-image {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background-color: #f0f0f0;
+}
+
+.lazy-image.loaded {
+    opacity: 1;
+}
+
+.loading-indicator {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    grid-column: 1 / -1;
+}
+
+/* 渐进加载效果 */
+.progressive-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.progressive-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.progressive-image .placeholder {
+    filter: blur(10px);
+    transform: scale(1.1);
+}
+
+.progressive-image .full-image {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.progressive-image .full-image.loaded {
+    opacity: 1;
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);
