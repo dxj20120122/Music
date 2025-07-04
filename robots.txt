@@ -1,0 +1,17 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /private/
+Disallow: /includes/
+Disallow: /config/
+Disallow: /backup/
+Disallow: /cgi-bin/
+Disallow: /search/
+Disallow: /?*
+Disallow: /*.php$
+Disallow: /*.js$
+Disallow: /*.inc$
+Disallow: /*.sql$
+Disallow: /*.mp3$
+Disallow: /*.jpg$
+Disallow: /*.lrc$
+Disallow: /*.json$
