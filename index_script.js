@@ -4,10 +4,61 @@ let currentPage = 1;
 const songsPerPage = 10; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
+let autoLoadEnabled = true; // 控制是否自动加载歌曲
+
+// 检测网络连接类型
+async function checkNetworkType() {
+    if ('connection' in navigator) {
+        const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        if (connection.type === 'cellular') {
+            // 使用移动数据时询问用户
+            const userChoice = await showNetworkPrompt();
+            autoLoadEnabled = userChoice;
+        } else {
+            // WiFi或其他网络类型时自动加载
+            autoLoadEnabled = true;
+        }
+    }
+}
+
+// 显示网络提示对话框
+function showNetworkPrompt() {
+    return new Promise((resolve) => {
+        const modal = document.createElement('div');
+        modal.className = 'network-modal';
+        modal.innerHTML = `
+            <div class="network-content">
+                <h3>网络提示</h3>
+                <p>检测到您正在使用移动数据，是否要加载全部歌曲？</p>
+                <div class="network-buttons">
+                    <button id="loadAll">加载全部</button>
+                    <button id="loadOnDemand">按需加载</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // 添加按钮事件监听
+        modal.querySelector('#loadAll').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(true);
+        });
+
+        modal.querySelector('#loadOnDemand').addEventListener('click', () => {
+            document.body.removeChild(modal);
+            resolve(false);
+        });
+    });
+}
 
 // 从songs.json加载歌曲数据
 async function loadSongs(page = 1) {
-    if (isLoading || !hasMoreSongs) return [];
+    // 首次加载时检查网络类型
+    if (page === 1) {
+        await checkNetworkType();
+    }
+    
+    if (isLoading || !hasMoreSongs || (!autoLoadEnabled && page > 1)) return [];
     
     isLoading = true;
     showLoadingIndicator();
@@ -190,7 +241,7 @@ function displaySongs(songs) {
 
         card.innerHTML = `
             <div class="song-image" style="${song.cover ? '' : `background: ${randomColor}`}">
-                ${song.cover ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
+                ${song.cover ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
                 <button class="play-button">
                     <i class="fas fa-play"></i>
                 </button>
@@ -930,6 +981,12 @@ async function updatePlaylistSongsList(playlistId, order = 'list') {
 }
 
 // 从歌单中移除歌曲
+/**
+ * Removes a song from a specified playlist in localStorage.
+ * @param {string} playlistId - The ID of the playlist to modify
+ * @param {string|number} songId - The ID of the song to remove (will be converted to string)
+ * @returns {void} Updates localStorage and UI, shows toast notifications
+ */
 function removeSongFromPlaylist(playlistId, songId) {
     const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
     const playlistIndex = playlists.findIndex(p => p.id === playlistId);
