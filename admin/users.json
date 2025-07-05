@@ -8,5 +8,10 @@
         "phone": "17855392453",
         "password": "$2y$10$MNIIkOun0kWbGUCN.ADwFeMA.StJtuB6ss1teC4K5.30vUECoWKba",
         "level": "diamond"
+    },
+    {
+        "phone": "19855032083",
+        "password": "$2y$10$i1QwWfUKnhp2fS0.LfmjBenhpUsPwzR8Jf9qAXqKMbFm1IJf7jK3C",
+        "level": "diamond"
     }
 ]
