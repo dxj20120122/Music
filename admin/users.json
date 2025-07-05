@@ -13,5 +13,11 @@
         "phone": "19855032083",
         "password": "$2y$10$i1QwWfUKnhp2fS0.LfmjBenhpUsPwzR8Jf9qAXqKMbFm1IJf7jK3C",
         "level": "diamond"
+    },
+    {
+        "phone": "15155387987",
+        "password": "$2y$10$QzlhH2PsQ3OD1h34rRcGB.8yuLtRG\/3mVzgtJT33xrnf2WGeQur22",
+        "level": "diamond",
+        "expiry_date": "2025-08-04 23:17:26"
     }
 ]
