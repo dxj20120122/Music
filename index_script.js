@@ -5,6 +5,266 @@ const songsPerPage = 10; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
+let isLoggedIn = false; // 登录状态
+
+// 检查登录状态
+function checkLoginStatus() {
+    const userData = localStorage.getItem('userData');
+    const loginButton = document.getElementById('loginButton');
+    if (userData) {
+        const { phone, token, level, isGuest, expiry_date } = JSON.parse(userData);
+        isLoggedIn = true;
+        
+        // 添加登出按钮和用户图标
+        loginButton.innerHTML = `
+            ${isGuest ? '<i class="fas fa-user-clock"></i>' : '<i class="fas fa-user-check"></i>'}
+            <button id="logoutButton" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
+        `;
+        
+        // 添加登出按钮事件监听
+        const logoutButton = document.getElementById('logoutButton');
+        if (logoutButton) {
+            logoutButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // 阻止事件冒泡到loginButton
+                logout();
+            });
+        }
+
+        // 添加用户信息点击事件
+        loginButton.addEventListener('click', () => {
+            if (isLoggedIn) {
+                showUserInfo();
+            }
+        });
+        
+        // 检查会员是否过期
+        const isExpired = expiry_date && new Date(expiry_date) < new Date();
+        if (isExpired && (level === 'vip' || level === 'diamond')) {
+            // 会员过期，降级为普通用户
+            const userData = JSON.parse(localStorage.getItem('userData'));
+            userData.level = 'normal';
+            localStorage.setItem('userData', JSON.stringify(userData));
+            level = 'normal';
+            showToast('会员已过期，已降级为普通用户');
+        }
+
+        // 根据用户等级控制广告和音乐播放
+        document.getElementById('adContainer').style.display = 'block';
+        if (level === 'vip' || level === 'diamond') {
+            document.getElementById('adContainer').style.display = 'none';
+        }
+        enableMusicPlayback();
+    } else {
+        isLoggedIn = false;
+        loginButton.innerHTML = '<i class="fas fa-user"></i>';
+        document.getElementById('adContainer').style.display = 'block';
+        disableMusicPlayback();
+    }
+}
+
+// 显示用户信息
+function showUserInfo() {
+    const userInfoModal = document.getElementById('userInfoModal');
+    const closeUserInfoModal = document.getElementById('closeUserInfoModal');
+    const userLevelDisplay = document.getElementById('userLevelDisplay');
+    const userExpiryDisplay = document.getElementById('userExpiryDisplay');
+    const userBenefitsList = document.getElementById('userBenefitsList');
+
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    if (!userData) return;
+
+    // 显示等级
+    const levelNames = {
+        normal: '普通用户',
+        vip: 'VIP用户',
+        diamond: '皇钻用户'
+    };
+    userLevelDisplay.textContent = levelNames[userData.level] || '普通用户';
+
+    // 显示到期时间
+    if (userData.expiry_date && (userData.level === 'vip' || userData.level === 'diamond')) {
+        const expiryDate = new Date(userData.expiry_date);
+        userExpiryDisplay.textContent = expiryDate.toLocaleDateString('zh-CN') + ' ' + 
+            expiryDate.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    } else {
+        userExpiryDisplay.textContent = '无限期';
+    }
+
+    // 显示权益
+    const benefits = {
+        normal: ['可免费听所有歌曲', '有广告'],
+        vip: ['无广告', '可联系站长添加歌曲 (每月限20首)', '每月10元'],
+        diamond: ['无广告', '可联系站长添加歌曲', '每月20元']
+    };
+    userBenefitsList.innerHTML = benefits[userData.level]
+        .map(benefit => `<li>${benefit}</li>`)
+        .join('');
+
+    userInfoModal.style.display = 'block';
+
+    closeUserInfoModal.addEventListener('click', () => {
+        userInfoModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === userInfoModal) {
+            userInfoModal.style.display = 'none';
+        }
+    });
+}
+
+// 启用音乐播放功能
+function enableMusicPlayback() {
+    if (!isLoggedIn) {
+        disableMusicPlayback();
+        return;
+    }
+    const songCards = document.querySelectorAll('.song-card');
+    songCards.forEach(card => {
+        card.style.opacity = '1';
+        card.style.pointerEvents = 'auto';
+        // 移除禁用提示（如果存在）
+        const disabledOverlay = card.querySelector('.disabled-overlay');
+        if (disabledOverlay) {
+            card.removeChild(disabledOverlay);
+        }
+    });
+}
+
+// 禁用音乐播放功能
+function disableMusicPlayback() {
+    const songCards = document.querySelectorAll('.song-card');
+    songCards.forEach(card => {
+        card.style.opacity = '0.5';
+        card.style.pointerEvents = 'none';
+        
+        // 添加禁用提示覆盖层
+        if (!card.querySelector('.disabled-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.className = 'disabled-overlay';
+            overlay.innerHTML = `
+                <i class="fas fa-lock"></i>
+                <p>请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听</p>
+            `;
+            card.appendChild(overlay);
+        }
+    });
+}
+
+// 初始化登录模态框
+function initLoginModal() {
+    const loginButton = document.getElementById('loginButton');
+    const loginModal = document.getElementById('loginModal');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const submitLogin = document.getElementById('submitLogin');
+    const phoneInput = document.getElementById('phoneInput');
+    const passwordInput = document.getElementById('passwordInput');
+
+    loginButton.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            loginModal.style.display = 'block';
+        }
+    });
+
+    closeLoginModal.addEventListener('click', () => {
+        loginModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+        if (e.target === loginModal) {
+            loginModal.style.display = 'none';
+        }
+    });
+
+    submitLogin.addEventListener('click', async () => {
+        const phone = phoneInput.value.trim();
+        const password = passwordInput.value.trim();
+
+        if (!phone || !password) {
+            showToast('请填写完整信息');
+            return;
+        }
+
+        try {
+            const response = await fetch('admin/users.json');
+            const users = await response.json();
+            
+            const user = users.find(u => u.phone === phone);
+            if (!user) {
+                showToast('用户不存在');
+                return;
+            }
+
+            // 使用 bcrypt.js 进行密码验证
+            const bcrypt = dcodeIO.bcrypt;
+            const match = await bcrypt.compare(password, user.password);
+
+            if (match) {
+                // 生成简单的token（实际应用中应该使用更安全的方式）
+                const token = btoa(phone + ':' + Date.now());
+                localStorage.setItem('userData', JSON.stringify({
+                    phone,
+                    token,
+                    level: user.level || 'normal',
+                    isGuest: false
+                }));
+                isLoggedIn = true;
+                loginModal.style.display = 'none';
+                checkLoginStatus();
+                showToast('登录成功');
+            } else {
+                showToast('密码错误');
+            }
+        } catch (error) {
+            console.error('登录失败:', error);
+            showToast('登录失败，请稍后重试');
+        }
+    });
+
+    // 游客登录
+    document.getElementById('guestLogin').addEventListener('click', () => {
+        const guestData = {
+            phone: 'guest_' + Date.now(),
+            token: btoa('guest:' + Date.now()),
+            level: 'normal',
+            isGuest: true,
+            loginTime: Date.now() // 记录登录时间
+        };
+        localStorage.setItem('userData', JSON.stringify(guestData));
+        isLoggedIn = true;
+        loginModal.style.display = 'none';
+        checkLoginStatus();
+        showToast('已使用游客账号登录');
+    });
+
+    // 添加登出函数
+    window.logout = function() {
+        localStorage.removeItem('userData');
+        isLoggedIn = false;
+        checkLoginStatus();
+        showToast('已退出登录');
+    };
+
+    // 检查游客登录时效性
+    function checkGuestValidity() {
+        const userData = localStorage.getItem('userData');
+        if (userData) {
+            const data = JSON.parse(userData);
+            if (data.isGuest) {
+                const loginTime = data.loginTime;
+                const currentTime = Date.now();
+                // 如果登录时间超过当前会话，自动登出
+                if (!loginTime || loginTime < currentTime - (24 * 60 * 60 * 1000)) { // 24小时后过期
+                    logout();
+                }
+            }
+        }
+    }
+
+    // 定期检查游客登录状态
+    setInterval(checkGuestValidity, 60000); // 每分钟检查一次
+    window.addEventListener('focus', checkGuestValidity); // 窗口获得焦点时检查
+}
 
 // 检测网络连接类型
 async function checkNetworkType() {
@@ -262,6 +522,10 @@ function displaySongs(songs) {
         const playBtn = card.querySelector('.play-button');
         playBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            if (!isLoggedIn) {
+                showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
+                return;
+            }
             playSong(song);
         });
 
@@ -309,6 +573,10 @@ function displaySongs(songs) {
 
         // 点击卡片跳转到歌曲目录
         card.addEventListener('click', () => {
+            if (!isLoggedIn) {
+                showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后查看');
+                return;
+            }
             window.location.href = `${song.folderName}/`;
         });
 
@@ -426,6 +694,12 @@ function initPlayerControls() {
     // 播放歌曲函数
     window.playSong = function (song) {
         if (!song) return;
+        
+        // 检查登录状态
+        if (!isLoggedIn) {
+            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
+            return;
+        }
 
         // 更新当前播放列表和索引
         const songGrid = document.getElementById('songGrid');
@@ -443,6 +717,7 @@ function initPlayerControls() {
             })
             .catch(error => {
                 console.error('播放失败:', error);
+                showToast('播放失败，请稍后重试');
             });
 
         // 更新播放器信息
@@ -469,6 +744,11 @@ function initPlayerControls() {
 
     // 播放/暂停按钮点击事件
     playButton.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
+            return;
+        }
+
         if (audioElement.paused) {
             audioElement.play()
                 .then(() => {
@@ -476,6 +756,7 @@ function initPlayerControls() {
                 })
                 .catch(error => {
                     console.error('播放失败:', error);
+                    showToast('播放失败，请稍后重试');
                 });
         } else {
             audioElement.pause();
@@ -484,10 +765,22 @@ function initPlayerControls() {
     });
 
     // 上一首按钮点击事件
-    prevButton.addEventListener('click', playPrev);
+    prevButton.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
+            return;
+        }
+        playPrev();
+    });
 
     // 下一首按钮点击事件
-    nextButton.addEventListener('click', playNext);
+    nextButton.addEventListener('click', () => {
+        if (!isLoggedIn) {
+            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
+            return;
+        }
+        playNext();
+    });
 
     // 歌曲结束时自动播放下一首
     audioElement.addEventListener('ended', playNext);
@@ -506,6 +799,10 @@ function initPlayerControls() {
 
     // 点击进度条跳转
     progressBar.addEventListener('click', (e) => {
+        if (!isLoggedIn) {
+            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
+            return;
+        }
         const rect = progressBar.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
         audioElement.currentTime = pos * audioElement.duration;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta name="msvalidate.01" content="17F58E477B9CFB986D13AC558D85FD68" />
     <meta charset="UTF-8">
@@ -8,9 +9,11 @@
     <meta name="msvalidate.01" content="17F58E477B9CFB986D13AC558D85FD68">
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="index_styles.css">
 </head>
+
 <body>
     <header>
         <div class="header-left">
@@ -20,7 +23,8 @@
                     <li><a href="#Simple Music" class="nav-link active">首页</a></li>
                     <li><a href="#" class="nav-link">发现</a></li>
                     <li><a href="#" class="nav-link">排行榜</a></li>
-                    <li><a href="url.html?url=https://donation.moujie.dpdns.org/" class="nav-link" target="_blank">捐赠</a></li>
+                    <li><a href="url.html?url=https://donation.moujie.dpdns.org/" class="nav-link"
+                            target="_blank">捐赠</a></li>
                 </ul>
             </nav>
         </div>
@@ -33,6 +37,9 @@
                 <button class="action-button" id="themeToggle" title="切换主题">
                     <i class="fas fa-moon"></i>
                 </button>
+                <button class="action-button" id="loginButton" title="登录">
+                    <i class="fas fa-user"></i>
+                </button>
             </div>
         </div>
     </header>
@@ -41,7 +48,8 @@
         <div class="sidebar-section">
             <h3 class="sidebar-title">我的音乐</h3>
             <ul class="sidebar-menu">
-                <li><a href="#" id="favoritesButton" class="sidebar-link active"><i class="fas fa-heart"></i>我喜欢的音乐</a></li>
+                <li><a href="#" id="favoritesButton" class="sidebar-link active"><i class="fas fa-heart"></i>我喜欢的音乐</a>
+                </li>
             </ul>
         </div>
         <div class="sidebar-section">
@@ -51,6 +59,7 @@
             </ul>
         </div>
     </aside>
+
 
     <div class="container">
         <div class="content-header">
@@ -64,7 +73,7 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="song-container">
             <div class="song-grid" id="songGrid">
                 <div class="loading">
@@ -74,9 +83,61 @@
             <div class="song-list" id="songList"></div>
         </div>
     </div>
-    
+
     <div class="toast" id="toast"></div>
-    
+
+    <!-- 用户信息弹窗 -->
+    <div class="user-info-modal" id="userInfoModal">
+        <div class="user-info-content">
+            <div class="user-info-header">
+                <h2>会员信息</h2>
+                <button class="close-button" id="closeUserInfoModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="user-info-body">
+                <div class="user-level-info">
+                    <h3>当前等级</h3>
+                    <p id="userLevelDisplay">加载中...</p>
+                </div>
+                <div class="user-expiry-info">
+                    <h3>到期时间</h3>
+                    <p id="userExpiryDisplay">加载中...</p>
+                </div>
+                <div class="user-benefits">
+                    <h3>当前权益</h3>
+                    <ul id="userBenefitsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-content">
+            <div class="login-header">
+                <h2>用户登录</h2>
+                <button class="close-button" id="closeLoginModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="phoneInput">手机号</label>
+                    <input type="tel" id="phoneInput" placeholder="请输入手机号">
+                </div>
+                <div class="form-group">
+                    <label for="passwordInput">密码</label>
+                    <input type="password" id="passwordInput" placeholder="请输入密码">
+                </div>
+                <button class="login-button" id="submitLogin">登录</button>
+                <div class="login-options">
+                    <button class="guest-login-button" id="guestLogin">游客临时登录</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 收藏弹窗 -->
     <div class="favorites-modal" id="favoritesModal">
         <div class="favorites-content">
@@ -96,7 +157,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 歌单弹窗 -->
     <div class="playlist-modal" id="playlistModal">
         <div class="playlist-content">
@@ -104,9 +165,9 @@
                 <h2>我的歌单</h2>
                 <button class="create-playlist-button" id="createNewPlaylist">创建歌单</button>
                 <button class="close-button" id="closePlaylistModal">
-                  <i class="fas fa-times"></i>
+                    <i class="fas fa-times"></i>
                 </button>
-              </div>
+            </div>
             <div class="playlist-list" id="playlistList">
                 <!-- 歌单列表将通过JavaScript动态生成 -->
             </div>
@@ -117,7 +178,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 创建歌单弹窗 -->
     <div class="playlist-modal" id="createPlaylistModal">
         <div class="playlist-content">
@@ -143,7 +204,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 歌单歌曲弹窗 -->
     <div class="playlist-songs-modal" id="playlistSongsModal">
         <div class="playlist-songs-content">
@@ -166,7 +227,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 添加到歌单弹窗 -->
     <div class="playlist-modal" id="addToPlaylistModal">
         <div class="playlist-content">
@@ -187,13 +248,13 @@
             </div>
         </div>
     </div>
-    
+
     <div class="audio-player" id="audioPlayer">
         <div class="player-info">
             <div class="player-title" id="playerTitle">未选择歌曲</div>
             <div class="player-artist" id="playerArtist"></div>
         </div>
-        
+
         <div class="player-controls">
             <button class="player-button" id="prevButton">
                 <i class="fas fa-step-backward"></i>
@@ -205,7 +266,7 @@
                 <i class="fas fa-step-forward"></i>
             </button>
         </div>
-        
+
         <div class="player-progress">
             <span class="time-display" id="currentTime">0:00</span>
             <div class="progress-bar" id="progressBar">
@@ -213,10 +274,85 @@
             </div>
             <span class="time-display" id="duration">0:00</span>
         </div>
-        
+
         <audio id="audioElement"></audio>
     </div>
 
+    <!-- 广告位 -->
+    <div class="ad-container" id="adContainer">
+        广告位招租:一个月10RMB
+        <img src="ad.png" alt="广告" class="ad-image">
+        VIP无广告
+    </div>
+
+    <!-- 页脚信息 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="membership-info">
+                <h3>会员等级说明</h3>
+                <div class="membership-grid">
+                    <div class="membership-card">
+                        <h4>游客</h4>
+                        <ul>
+                            <li>有广告</li>
+                            <li>不可播放音乐</li>
+                            <li>需要登录或使用游客临时账户</li>
+                        </ul>
+                    </div>
+                    <div class="membership-card">
+                        <h4>普通用户</h4>
+                        <ul>
+                            <li>有广告</li>
+                            <li>可免费听所有歌曲</li>
+                        </ul>
+                    </div>
+                    <div class="membership-card">
+                        <h4>VIP用户</h4>
+                        <ul>
+                            <li>无广告</li>
+                            <li>可联系站长添加歌曲 (每月限20首)</li>
+                            <li>每月10元</li>
+                        </ul>
+                    </div>
+                    <div class="membership-card">
+                        <h4>皇钻用户</h4>
+                        <ul>
+                            <li>无广告</li>
+                            <li>可联系站长添加歌曲</li>
+                            <li>每月20元</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 联系方式 -->
+    <div class="contact-info">
+        联系站长注册&充值账户
+        <br>
+        <i class="fas fa-sms"></i> <a href="sms:18255391942" class="contact-link">短信：18255391942 </a>| QQ：3835906098
+        |<a href="mailto:3835906098@qq.com" class="contact-link">
+            <EMAIL> 邮箱：3835906098@qq.com<EMAIL>
+        </a>
+    </div>
+
+    <footer class="footer">
+        <p>© 2025 Simple Music. All rights reserved.</p>
+        <p>如有侵权联系删除</p>
+        <p>Powered by <a href="https://github.com/dxj20120122/Music" target="_blank" class="contact-link">Simple
+                Music</a></p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
     <script src="index_script.js"></script>
+    <script>
+        // 初始化登录状态和功能
+        document.addEventListener('DOMContentLoaded', () => {
+            checkLoginStatus();
+            initLoginModal();
+        });
+    </script>
 </body>
+
 </html>
