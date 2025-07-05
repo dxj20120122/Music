@@ -12,17 +12,19 @@
     <!-- 关键CSS内联 -->
     <style>
         :root {
-            --primary-color: #3498db;
-            --primary-hover: #2980b9;
-            --text-color: #333;
-            --light-text: #7f8c8d;
-            --background: #f5f5f5;
+            --primary-color: #4361ee;
+            --primary-hover: #3a56d4;
+            --text-color: #2b2d42;
+            --light-text: #6c757d;
+            --background: #f8f9fa;
             --card-bg: #ffffff;
-            --warning-color: #e74c3c;
-            --safe-color: #2ecc71;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s ease;
+            --warning-color: #ef233c;
+            --safe-color: #2a9d8f;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --success-color: #4cc9f0;
+            --info-color: #4895ef;
         }
         
         * {
@@ -32,7 +34,7 @@
         }
         
         body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background-color: var(--background);
             color: var(--text-color);
             display: flex;
@@ -40,7 +42,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            padding: 24px;
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
         }
@@ -54,127 +56,141 @@
             box-shadow: var(--box-shadow);
             position: relative;
             overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .logo {
-            margin-bottom: 24px;
+            margin-bottom: 28px;
             font-size: 24px;
-            font-weight: 500;
+            font-weight: 600;
             color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 12px;
         }
         
         .logo-icon {
-            margin-right: 10px;
             font-size: 28px;
+            color: var(--primary-color);
         }
         
         h1 {
             color: var(--text-color);
             margin-bottom: 16px;
-            font-weight: 500;
+            font-weight: 600;
             font-size: 24px;
             text-align: center;
         }
         
+        .description {
+            color: var(--light-text);
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 16px;
+        }
+        
         .url-display {
-            margin: 20px 0;
-            padding: 16px;
-            background-color: rgba(0, 0, 0, 0.03);
-            border-radius: 4px;
+            margin: 24px 0;
+            padding: 18px;
+            background-color: rgba(67, 97, 238, 0.05);
+            border-radius: var(--border-radius);
             word-break: break-all;
             font-family: 'SF Mono', 'Roboto Mono', monospace;
             color: var(--primary-color);
             font-size: 15px;
-            border-left: 3px solid var(--primary-color);
+            border-left: 4px solid var(--primary-color);
             position: relative;
             overflow: hidden;
+            transition: var(--transition);
+        }
+        
+        .url-display.warning {
+            border-left-color: var(--warning-color);
+            background-color: rgba(239, 35, 60, 0.05);
         }
         
         .url-display::before {
-            content: "URL";
+            content: "目标网址";
             position: absolute;
             top: 0;
             left: 0;
             background: var(--primary-color);
             color: white;
             font-size: 11px;
-            padding: 2px 6px;
+            padding: 4px 8px;
             border-bottom-right-radius: 4px;
             font-family: sans-serif;
-        }
-        
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            margin-top: 24px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px 24px;
-            background-color: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: var(--transition);
-            font-size: 16px;
             font-weight: 500;
-            border: none;
-            cursor: pointer;
-            flex: 1;
-            min-width: 160px;
-            max-width: 100%;
+            letter-spacing: 0.5px;
         }
         
-        .btn:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-1px);
+        .url-display.warning::before {
+            background: var(--warning-color);
         }
         
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
+        .status-container {
+            margin: 28px 0;
         }
         
-        .btn-outline:hover {
-            background-color: rgba(52, 152, 219, 0.1);
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 12px 16px;
+            background-color: rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
+            transition: var(--transition);
         }
         
-        .btn i {
-            margin-right: 8px;
+        .status-item.completed {
+            background-color: rgba(74, 201, 240, 0.08);
         }
         
-        .countdown {
-            margin-top: 16px;
-            font-size: 14px;
-            color: var(--light-text);
+        .status-item.failed {
+            background-color: rgba(239, 35, 60, 0.08);
+        }
+        
+        .status-icon {
+            margin-right: 12px;
+            font-size: 20px;
+            width: 24px;
             text-align: center;
+        }
+        
+        .status-text {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .status-detail {
+            font-size: 12px;
+            color: var(--light-text);
+            margin-top: 4px;
         }
         
         .progress-container {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background-color: rgba(0, 0, 0, 0.05);
-            margin: 24px 0;
-            border-radius: 3px;
+            margin: 28px 0;
+            border-radius: 4px;
             overflow: hidden;
             position: relative;
         }
         
         .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), #4facfe);
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
             width: 0%;
             transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
             position: relative;
+            border-radius: 4px;
         }
         
         .progress-bar::after {
@@ -189,6 +205,7 @@
                       rgba(255,255,255,0.6) 50%, 
                       rgba(255,255,255,0) 100%);
             animation: shimmer 2s infinite;
+            border-radius: 4px;
         }
         
         @keyframes shimmer {
@@ -196,46 +213,125 @@
             100% { transform: translateX(100%); }
         }
         
-        .status {
-            font-size: 14px;
+        .countdown {
+            font-size: 15px;
             color: var(--light-text);
-            margin-top: 8px;
+            text-align: center;
+            margin: 16px 0;
+            font-weight: 500;
+        }
+        
+        .countdown.warning {
+            color: var(--warning-color);
+        }
+        
+        .btn-group {
             display: flex;
-            align-items: center;
+            gap: 16px;
+            margin-top: 24px;
+            flex-wrap: wrap;
             justify-content: center;
         }
         
-        .status i {
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: var(--transition);
+            font-size: 16px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            flex: 1;
+            min-width: 180px;
+            max-width: 100%;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.15);
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(67, 97, 238, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            box-shadow: none;
+        }
+        
+        .btn i {
             margin-right: 8px;
+        }
+        
+        .btn-danger {
+            background-color: var(--warning-color);
+            box-shadow: 0 4px 12px rgba(239, 35, 60, 0.15);
+        }
+        
+        .btn-danger:hover {
+            background-color: #d91e37;
+            box-shadow: 0 6px 16px rgba(239, 35, 60, 0.2);
         }
         
         .security-info {
             margin-top: 20px;
             padding: 16px;
-            background-color: rgba(231, 76, 60, 0.08);
-            border-radius: 4px;
+            background-color: rgba(239, 35, 60, 0.08);
+            border-radius: var(--border-radius);
             font-size: 14px;
             color: var(--text-color);
-            border-left: 3px solid var(--warning-color);
+            border-left: 4px solid var(--warning-color);
             position: relative;
+            animation: pulseWarning 2s infinite;
+        }
+        
+        @keyframes pulseWarning {
+            0% { box-shadow: 0 0 0 0 rgba(239, 35, 60, 0.1); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 35, 60, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 35, 60, 0); }
         }
         
         .security-info.safe {
-            background-color: rgba(46, 204, 113, 0.08);
+            background-color: rgba(42, 157, 143, 0.08);
             border-left-color: var(--safe-color);
+            animation: none;
+        }
+        
+        .security-info.info {
+            background-color: rgba(72, 149, 239, 0.08);
+            border-left-color: var(--info-color);
+            animation: none;
         }
         
         .security-info::before {
-            content: "安全提示";
+            content: "安全警告";
             position: absolute;
             top: 0;
             left: 0;
             background: var(--warning-color);
             color: white;
             font-size: 11px;
-            padding: 2px 6px;
+            padding: 4px 8px;
             border-bottom-right-radius: 4px;
             font-family: sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
         
         .security-info.safe::before {
@@ -243,13 +339,19 @@
             content: "安全验证";
         }
         
+        .security-info.info::before {
+            background: var(--info-color);
+            content: "提示信息";
+        }
+        
         .domain-highlight {
-            font-weight: bold;
+            font-weight: 600;
             color: var(--warning-color);
         }
         
         .safe-domain {
             color: var(--safe-color);
+            font-weight: 600;
         }
         
         .loading-spinner {
@@ -270,16 +372,18 @@
         .link-preview {
             margin-top: 24px;
             border: 1px solid rgba(0,0,0,0.1);
-            border-radius: 4px;
+            border-radius: var(--border-radius);
             overflow: hidden;
             max-height: 200px;
             position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
         }
         
         .link-preview img {
             width: 100%;
             height: auto;
             display: block;
+            object-fit: cover;
         }
         
         .link-preview::after {
@@ -309,14 +413,18 @@
             }
             
             .btn {
-                padding: 10px 16px;
+                padding: 12px 16px;
                 font-size: 15px;
-                min-width: 120px;
+                min-width: 140px;
             }
             
             .url-display {
                 font-size: 14px;
-                padding: 12px 12px 12px 16px;
+                padding: 14px 14px 14px 16px;
+            }
+            
+            .btn-group {
+                gap: 12px;
             }
         }
         
@@ -327,7 +435,7 @@
                 --light-text: #b0b0b0;
                 --background: #121212;
                 --card-bg: #1e1e1e;
-                --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+                --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
             }
             
             .url-display {
@@ -336,6 +444,18 @@
             
             .progress-container {
                 background-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .status-item {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            
+            .link-preview {
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+            
+            .link-preview::after {
+                background: linear-gradient(to top, rgba(30, 30, 30, 0.9), rgba(30, 30, 30, 0));
             }
         }
     </style>
@@ -346,39 +466,62 @@
 <body>
     <div class="container">
         <div class="logo">
-            <i class="bi bi-box-arrow-up-right logo-icon"></i>
+            <i class="bi bi-shield-lock logo-icon"></i>
             <span>安全跳转服务</span>
         </div>
         <h1>您即将离开当前页面</h1>
-        <p>系统将在 <span id="countdown">5</span> 秒后自动跳转到目标网址</p>
+        <p class="description">系统正在验证目标网站安全性并预加载资源</p>
         
         <div class="url-display" id="target-url"></div>
         
-        <div id="domain-info" class="security-info">
-            <i class="bi bi-shield-exclamation"></i>
-            您将访问 <span class="domain-highlight" id="target-domain"></span> 的网站，
-            请确认地址栏显示的域名与预期一致。
+        <div class="status-container" id="status-container">
+            <div class="status-item" id="dns-status">
+                <i class="bi bi-globe status-icon"></i>
+                <div class="status-text">
+                    DNS解析
+                    <div class="status-detail">正在解析目标域名...</div>
+                </div>
+            </div>
+            
+            <div class="status-item" id="connection-status">
+                <i class="bi bi-plug status-icon"></i>
+                <div class="status-text">
+                    连接测试
+                    <div class="status-detail">正在测试网站可访问性...</div>
+                </div>
+            </div>
+            
+            <div class="status-item" id="security-status">
+                <i class="bi bi-shield-check status-icon"></i>
+                <div class="status-text">
+                    安全检查
+                    <div class="status-detail">正在验证网站安全性...</div>
+                </div>
+            </div>
+            
+            <div class="status-item" id="preload-status">
+                <i class="bi bi-lightning-charge status-icon"></i>
+                <div class="status-text">
+                    资源预加载
+                    <div class="status-detail">准备预加载资源...</div>
+                </div>
+            </div>
         </div>
         
-        <div id="ssl-info" class="security-info safe" style="display:none;">
-            <i class="bi bi-shield-check"></i>
-            此网站使用 <strong>HTTPS 安全连接</strong>，数据传输已加密。
-        </div>
-        
-        <div id="phishing-warning" class="security-info" style="display:none;">
-            <i class="bi bi-exclamation-octagon"></i>
-            检测到潜在风险：<span id="warning-message"></span> 请谨慎访问。
-        </div>
-
         <div class="progress-container">
             <div class="progress-bar" id="progress-bar"></div>
         </div>
-        <div class="status" id="status">
-            <span class="loading-spinner"></span>
-            <span>正在预加载目标页面资源...</span>
-        </div>
         
-        <div id="link-preview" class="link-preview" style="display:none;">
+        <div class="countdown" id="countdown">
+            系统将在 <span id="countdown-number">5</span> 秒后自动跳转
+        </div>
+
+        <div id="security-info" class="security-info info" style="display: none;">
+            <i class="bi bi-info-circle"></i>
+            <span id="security-message">正在检查目标网站安全性...</span>
+        </div>
+
+        <div id="link-preview" class="link-preview" style="display: none;">
             <img id="preview-image" src="" alt="网站预览" loading="lazy">
             <div class="link-preview-info" id="preview-title"></div>
         </div>
@@ -393,7 +536,6 @@
                 <span>取消跳转</span>
             </button>
         </div>
-        <div class="countdown">如果跳转未自动进行，请点击上方按钮</div>
     </div>
 
     <script>
@@ -488,16 +630,18 @@
                 redirectBtn: document.getElementById('manual-redirect'),
                 cancelBtn: document.getElementById('cancel-redirect'),
                 progressBar: document.getElementById('progress-bar'),
-                status: document.getElementById('status'),
                 countdown: document.getElementById('countdown'),
-                domainInfo: document.getElementById('domain-info'),
-                sslInfo: document.getElementById('ssl-info'),
-                targetDomain: document.getElementById('target-domain'),
+                countdownNumber: document.getElementById('countdown-number'),
+                securityInfo: document.getElementById('security-info'),
+                securityMessage: document.getElementById('security-message'),
                 linkPreview: document.getElementById('link-preview'),
                 previewImage: document.getElementById('preview-image'),
                 previewTitle: document.getElementById('preview-title'),
-                phishingWarning: document.getElementById('phishing-warning'),
-                warningMessage: document.getElementById('warning-message')
+                statusContainer: document.getElementById('status-container'),
+                dnsStatus: document.getElementById('dns-status'),
+                connectionStatus: document.getElementById('connection-status'),
+                securityStatus: document.getElementById('security-status'),
+                preloadStatus: document.getElementById('preload-status')
             };
             
             // 全局状态
@@ -515,12 +659,60 @@
                 criticalResourcesLoaded: false,
                 networkStatus: isSlowNetwork ? 'slow' : 'normal',
                 preloadedResources: new Set(),
-                resourcePriorities: new Map(), // 资源优先级映射
-                criticalResources: new Set() // 关键资源集合
+                resourcePriorities: new Map(),
+                criticalResources: new Set(),
+                autoRedirectDisabled: false,
+                preloadStats: {
+                    dns: 'pending',
+                    connection: 'pending',
+                    security: 'pending',
+                    resources: 'pending'
+                }
             };
             
+            // 更新状态显示
+            function updateStatus(type, status, message = '') {
+                const statusMap = {
+                    dns: elements.dnsStatus,
+                    connection: elements.connectionStatus,
+                    security: elements.securityStatus,
+                    resources: elements.preloadStatus
+                };
+                
+                const iconMap = {
+                    pending: 'bi-hourglass',
+                    completed: 'bi-check-circle',
+                    failed: 'bi-exclamation-triangle'
+                };
+                
+                const colorMap = {
+                    pending: '',
+                    completed: 'color: var(--safe-color)',
+                    failed: 'color: var(--warning-color)'
+                };
+                
+                const statusElement = statusMap[type];
+                if (!statusElement) return;
+                
+                state.preloadStats[type] = status;
+                
+                // 更新图标
+                const icon = statusElement.querySelector('.status-icon');
+                icon.className = `bi ${iconMap[status]} status-icon`;
+                icon.style = colorMap[status];
+                
+                // 更新状态文本
+                if (message) {
+                    const detail = statusElement.querySelector('.status-detail');
+                    detail.textContent = message;
+                }
+                
+                // 更新类名
+                statusElement.className = `status-item ${status}`;
+            }
+            
             // 初始化函数
-            function init() {
+            async function init() {
                 const urlParam = getQueryParam('url');
                 if (!urlParam) {
                     showError('缺少目标URL参数');
@@ -540,32 +732,292 @@
                 
                 if (validation.warning) {
                     showWarning(validation.warning);
+                    elements.display.classList.add('warning');
                 }
                 
                 try {
                     state.targetUrlObj = new URL(state.targetUrl);
-                    analyzeTargetUrl();
-                    setupPreloading();
-                    startCountdown();
-                    setupEventListeners();
-                    fetchLinkPreview();
                     
-                    // 根据网络状况调整策略
-                    if (state.networkStatus === 'slow') {
-                        adjustForSlowNetwork();
+                    // 并行执行检查和预加载
+                    const [isAccessible, securityCheck] = await Promise.all([
+                        checkDomainAccessibility(state.targetUrlObj),
+                        checkSecurity(state.targetUrlObj)
+                    ]);
+                    
+                    if (!isAccessible) {
+                        disableAutoRedirect('目标网站无法访问，已禁用自动跳转');
+                    } else if (!securityCheck.isSafe) {
+                        disableAutoRedirect(securityCheck.message || '目标网站存在安全风险，已禁用自动跳转');
+                    } else {
+                        // 所有检查通过，继续正常流程
+                        analyzeTargetUrl();
+                        setupPreloading();
+                        startCountdown();
+                        setupEventListeners();
+                        fetchLinkPreview();
+                        
+                        if (state.networkStatus === 'slow') {
+                            adjustForSlowNetwork();
+                        }
+                        
+                        preloadCriticalResources();
                     }
-                    
-                    // 预加载关键资源
-                    preloadCriticalResources();
                 } catch (e) {
-                    console.error('URL解析错误:', e);
-                    showError('目标URL格式不正确');
+                    console.error('初始化检查失败:', e);
+                    disableAutoRedirect('安全检查过程中发生错误');
                 }
+            }
+            
+            // 域名可访问性检查函数
+            async function checkDomainAccessibility(urlObj) {
+                try {
+                    updateStatus('dns', 'pending', '正在解析DNS...');
+                    
+                    // 先尝试DNS预取
+                    const dnsPrefetchLink = document.createElement('link');
+                    dnsPrefetchLink.rel = 'dns-prefetch';
+                    dnsPrefetchLink.href = urlObj.origin;
+                    document.head.appendChild(dnsPrefetchLink);
+                    
+                    // 使用HEAD方法测试连接性
+                    updateStatus('connection', 'pending', '正在测试连接...');
+                    
+                    const controller = new AbortController();
+                    const timeout = setTimeout(() => controller.abort(), 3000);
+                    
+                    const testUrl = `${urlObj.origin}/`;
+                    const response = await fetch(testUrl, {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        signal: controller.signal,
+                        cache: 'no-store'
+                    });
+                    
+                    clearTimeout(timeout);
+                    
+                    updateStatus('dns', 'completed', 'DNS解析成功');
+                    updateStatus('connection', 'completed', '连接测试成功');
+                    return true;
+                } catch (error) {
+                    console.error('域名访问性检查失败:', error);
+                    
+                    // 尝试备用方法 - 使用图片ping
+                    try {
+                        updateStatus('connection', 'pending', '尝试备用方法连接...');
+                        
+                        const img = new Image();
+                        await new Promise((resolve, reject) => {
+                            img.onload = resolve;
+                            img.onerror = reject;
+                            img.src = `${urlObj.origin}/favicon.ico?t=${Date.now()}`;
+                            
+                            setTimeout(() => {
+                                reject(new Error('连接超时'));
+                            }, 2000);
+                        });
+                        
+                        updateStatus('dns', 'completed', 'DNS解析成功');
+                        updateStatus('connection', 'completed', '通过备用方法连接成功');
+                        return true;
+                    } catch (imgError) {
+                        console.error('图片ping检查失败:', imgError);
+                        
+                        updateStatus('dns', error.message.includes('resolve') ? 'failed' : 'completed', 
+                                   error.message.includes('resolve') ? 'DNS解析失败' : 'DNS解析成功');
+                        updateStatus('connection', 'failed', '连接测试失败: ' + 
+                                   (imgError.message || '无法建立连接'));
+                        return false;
+                    }
+                }
+            }
+            
+            // 安全性检查函数
+            async function checkSecurity(urlObj) {
+                const result = {
+                    isSafe: true,
+                    message: ''
+                };
+                
+                updateStatus('security', 'pending', '正在检查安全性...');
+                
+                // 1. 检查HTTPS有效性
+                if (urlObj.protocol === 'https:') {
+                    try {
+                        // 实际测试HTTPS连接
+                        const response = await fetch(urlObj.origin, {
+                            method: 'HEAD',
+                            mode: 'cors',
+                            cache: 'no-store',
+                            credentials: 'omit'
+                        });
+                        
+                        // 检查安全头部
+                        const securityHeaders = {
+                            'strict-transport-security': response.headers.get('strict-transport-security'),
+                            'x-frame-options': response.headers.get('x-frame-options'),
+                            'x-content-type-options': response.headers.get('x-content-type-options'),
+                            'content-security-policy': response.headers.get('content-security-policy')
+                        };
+                        
+                        // 评估安全头部
+                        let warnings = [];
+                        
+                        if (!securityHeaders['strict-transport-security']) {
+                            warnings.push('缺少HSTS头部');
+                        }
+                        
+                        if (!securityHeaders['x-frame-options']) {
+                            warnings.push('缺少X-Frame-Options头部');
+                        }
+                        
+                        if (warnings.length > 0) {
+                            result.message = warnings.join('，') + '，安全性可能不足';
+                            updateStatus('security', 'completed', '基本安全但存在警告');
+                        } else {
+                            updateStatus('security', 'completed', '安全性验证通过');
+                        }
+                    } catch (error) {
+                        if (error.message.includes('Failed to fetch') || 
+                            error.message.includes('NetworkError')) {
+                            // 可能是CORS阻止，尝试其他方法
+                            try {
+                                const img = new Image();
+                                await new Promise((resolve, reject) => {
+                                    img.onload = resolve;
+                                    img.onerror = () => reject(new Error('HTTPS证书错误'));
+                                    img.src = `${urlObj.origin}/favicon.ico?t=${Date.now()}`;
+                                });
+                                
+                                updateStatus('security', 'completed', 'HTTPS验证通过');
+                            } catch (imgError) {
+                                result.isSafe = false;
+                                result.message = 'HTTPS证书无效或存在安全问题';
+                                updateStatus('security', 'failed', result.message);
+                                return result;
+                            }
+                        } else {
+                            result.isSafe = false;
+                            result.message = 'HTTPS连接验证失败: ' + error.message;
+                            updateStatus('security', 'failed', result.message);
+                            return result;
+                        }
+                    }
+                } else {
+                    result.isSafe = false;
+                    result.message = '网站未使用HTTPS安全连接';
+                    updateStatus('security', 'failed', result.message);
+                    return result;
+                }
+                
+                // 2. 检查已知钓鱼网站
+                try {
+                    updateStatus('security', 'pending', '检查钓鱼网站...');
+                    
+                    const phishingCheck = await checkPhishingDatabase(urlObj.hostname);
+                    if (phishingCheck.isPhishing) {
+                        result.isSafe = false;
+                        result.message = '该网站已被标记为钓鱼网站: ' + phishingCheck.reason;
+                        updateStatus('security', 'failed', result.message);
+                        return result;
+                    }
+                } catch (e) {
+                    console.error('钓鱼网站检查失败:', e);
+                    updateStatus('security', 'completed', '钓鱼检查跳过');
+                }
+                
+                // 3. 检查IDN同形字攻击
+                if (isIdnHomograph(urlObj.hostname)) {
+                    result.isSafe = false;
+                    result.message = '检测到可能的IDN同形字攻击';
+                    updateStatus('security', 'failed', result.message);
+                    return result;
+                }
+                
+                return result;
+            }
+            
+            // 检查IDN同形字攻击
+            function isIdnHomograph(domain) {
+                // 检查是否包含非ASCII字符
+                if (!/[^\u0000-\u007F]/.test(domain)) return false;
+                
+                // 将域名规范化
+                const normalized = domain.normalize('NFKC');
+                
+                // 检查规范化前后是否不同
+                if (domain !== normalized) {
+                    // 检查是否与常见域名相似
+                    const commonDomains = ['apple.com', 'microsoft.com', 'google.com', 'amazon.com', 'paypal.com'];
+                    const asciiDomain = normalized.replace(/[^\x00-\x7F]/g, '');
+                    
+                    return commonDomains.some(common => 
+                        asciiDomain.includes(common) || 
+                        common.includes(asciiDomain)
+                    );
+                }
+                
+                return false;
+            }
+            
+            // 模拟钓鱼网站检查
+            async function checkPhishingDatabase(domain) {
+                // 这里应该是调用第三方API的代码
+                // 以下是模拟实现
+                
+                // 已知钓鱼域名模式
+                const phishingPatterns = [
+                    /paypa1\./,
+                    /amaz0n\./,
+                    /micr0soft\./,
+                    /app1e\./,
+                    /google-security\./,
+                    /login-/,
+                    /account-/,
+                    /verify-/,
+                    /update-/,
+                    /secure-/
+                ];
+                
+                const isPhishing = phishingPatterns.some(pattern => pattern.test(domain));
+                
+                return {
+                    isPhishing,
+                    reason: isPhishing ? '匹配已知钓鱼模式' : ''
+                };
+            }
+            
+            // 禁用自动跳转函数
+            function disableAutoRedirect(reason) {
+                clearInterval(state.timer);
+                state.autoRedirectDisabled = true;
+                
+                // 更新UI显示
+                elements.countdownNumber.textContent = '0';
+                elements.countdown.classList.add('warning');
+                elements.countdown.innerHTML = `<i class="bi bi-exclamation-triangle"></i> ${reason}，请手动跳转`;
+                
+                // 更新安全信息
+                elements.securityInfo.style.display = 'block';
+                elements.securityInfo.className = 'security-info';
+                elements.securityMessage.textContent = reason;
+                
+                // 仍然继续预加载
+                if (state.hiddenIframe) {
+                    state.hiddenIframe.src = state.targetUrl;
+                }
+            }
+            
+            // 显示警告
+            function showWarning(message) {
+                elements.securityInfo.style.display = 'block';
+                elements.securityMessage.textContent = message;
             }
             
             // 预加载关键资源
             function preloadCriticalResources() {
                 if (!state.targetUrlObj) return;
+                
+                updateStatus('resources', 'pending', '准备预加载关键资源...');
                 
                 // 预加载目标页面的关键资源
                 const criticalResources = [
@@ -606,6 +1058,14 @@
                         link.crossOrigin = 'anonymous';
                     }
                     
+                    link.onload = () => {
+                        updateStatus('resources', 'completed', '关键资源预加载完成');
+                    };
+                    
+                    link.onerror = () => {
+                        updateStatus('resources', 'failed', '部分关键资源加载失败');
+                    };
+                    
                     document.head.appendChild(link);
                 });
             }
@@ -614,13 +1074,10 @@
             function adjustForSlowNetwork() {
                 // 减少预加载资源数量
                 state.countdown = Math.max(state.countdown, 8); // 延长等待时间
-                elements.countdown.textContent = state.countdown;
+                elements.countdownNumber.textContent = state.countdown;
                 
                 // 更新状态提示
-                elements.status.innerHTML = `
-                    <i class="bi bi-wifi-off"></i>
-                    <span>检测到慢速网络，优化加载策略...</span>
-                `;
+                updateStatus('resources', 'pending', '检测到慢速网络，优化加载策略...');
                 
                 // 取消非关键资源的预加载
                 if (state.hiddenIframe) {
@@ -637,26 +1094,8 @@
             
             // 分析目标URL
             function analyzeTargetUrl() {
-                elements.targetDomain.textContent = state.targetUrlObj.hostname;
-                
-                // 检查HTTPS
-                if (state.targetUrlObj.protocol === 'https:') {
-                    state.isSafe = true;
-                    elements.sslInfo.style.display = 'block';
-                    elements.domainInfo.classList.add('safe');
-                    elements.domainInfo.querySelector('.domain-highlight').classList.add('safe-domain');
-                    elements.domainInfo.querySelector('i').className = 'bi bi-shield-check';
-                    elements.domainInfo.querySelector('i').nextSibling.textContent = ' 您将访问 ';
-                }
-                
                 // 添加预连接
                 addPreconnects();
-            }
-            
-            // 显示警告
-            function showWarning(message) {
-                elements.warningMessage.textContent = message;
-                elements.phishingWarning.style.display = 'block';
             }
             
             // 添加预连接
@@ -691,12 +1130,14 @@
             
             // 设置预加载
             function setupPreloading() {
+                updateStatus('resources', 'pending', '正在初始化预加载...');
+                
                 // 使用iframe进行预加载
                 state.hiddenIframe = document.createElement('iframe');
                 state.hiddenIframe.style.display = 'none';
                 state.hiddenIframe.src = state.targetUrl;
                 state.hiddenIframe.loading = 'eager';
-                state.hiddenIframe.sandbox = 'allow-same-origin allow-scripts'; // 沙箱限制
+                state.hiddenIframe.sandbox = 'allow-same-origin allow-scripts';
                 document.body.appendChild(state.hiddenIframe);
                 
                 // 使用PerformanceObserver监控资源加载
@@ -735,10 +1176,9 @@
                         
                         if (criticalLoaded >= Math.max(1, state.criticalResources.size * 0.6)) {
                             state.criticalResourcesLoaded = true;
-                            elements.status.innerHTML = `
-                                <i class="bi bi-check-circle"></i>
-                                <span>关键资源已加载，准备跳转...</span>
-                            `;
+                            updateStatus('resources', 'completed', '关键资源已加载，准备跳转...');
+                        } else {
+                            updateStatus('resources', 'pending', `已加载 ${state.loadedResources} 个资源...`);
                         }
                     }
                     
@@ -754,12 +1194,14 @@
                     updateProgress();
                     state.observer.disconnect();
                     
+                    updateStatus('resources', 'completed', '目标页面预加载完成');
+                    
                     // 提取iframe中的资源进行预加载
                     extractIframeResources();
                 };
                 
                 state.hiddenIframe.onerror = function() {
-                    elements.status.innerHTML = '<i class="bi bi-exclamation-triangle"></i> 预加载失败，但仍可跳转';
+                    updateStatus('resources', 'failed', '预加载失败，但仍可跳转');
                     state.observer.disconnect();
                 };
             }
@@ -825,17 +1267,6 @@
                 
                 if (progress >= 95 && state.isPreloaded) {
                     elements.progressBar.style.width = '100%';
-                    elements.status.innerHTML = '<i class="bi bi-check-circle"></i> 目标页面已预加载完成';
-                } else if (state.criticalResourcesLoaded) {
-                    elements.status.innerHTML = `
-                        <i class="bi bi-lightning"></i>
-                        <span>已加载 ${state.loadedResources} 个资源，准备就绪...</span>
-                    `;
-                } else {
-                    elements.status.innerHTML = `
-                        <span class="loading-spinner"></span>
-                        <span>已加载 ${state.loadedResources} / ${state.totalResources} 个资源...</span>
-                    `;
                 }
             }
             
@@ -965,7 +1396,7 @@
                 
                 fetch(proxyUrl, { 
                     signal: controller.signal,
-                    priority: 'low' // 低优先级请求
+                    priority: 'low'
                 })
                     .then(response => {
                         clearTimeout(timeout);
@@ -986,7 +1417,7 @@
                                 }
                             }, {
                                 threshold: 0.1,
-                                rootMargin: '200px' // 提前200px加载
+                                rootMargin: '200px'
                             });
                             
                             observer.observe(elements.linkPreview);
@@ -999,16 +1430,18 @@
             
             // 开始倒计时
             function startCountdown() {
+                if (state.autoRedirectDisabled) return;
+                
                 // 根据网络状况和安全状态调整倒计时
                 state.countdown = state.isSafe ? 
                     (state.networkStatus === 'slow' ? 5 : 3) : 
                     (state.networkStatus === 'slow' ? 8 : 5);
                 
-                elements.countdown.textContent = state.countdown;
+                elements.countdownNumber.textContent = state.countdown;
                 
                 state.timer = setInterval(() => {
                     state.countdown--;
-                    elements.countdown.textContent = state.countdown;
+                    elements.countdownNumber.textContent = state.countdown;
                     
                     if (state.countdown <= 0) {
                         clearInterval(state.timer);
@@ -1059,9 +1492,10 @@
                         state.observer.disconnect();
                     }
                     
-                    elements.status.innerHTML = '<i class="bi bi-info-circle"></i> 跳转已取消';
+                    updateStatus('resources', 'failed', '跳转已取消');
                     elements.progressBar.style.width = '0%';
-                    elements.countdown.textContent = '0';
+                    elements.countdownNumber.textContent = '0';
+                    elements.countdown.innerHTML = '<i class="bi bi-info-circle"></i> 跳转已取消';
                 });
                 
                 // 页面可见性变化处理
@@ -1133,9 +1567,14 @@
             function showError(message) {
                 elements.display.textContent = message;
                 elements.redirectBtn.style.display = 'none';
-                elements.countdown.textContent = '0';
-                elements.status.textContent = '错误: ' + message;
+                elements.countdownNumber.textContent = '0';
+                elements.countdown.innerHTML = `<i class="bi bi-exclamation-triangle"></i> 错误: ${message}`;
                 elements.progressBar.style.width = '0%';
+                
+                updateStatus('dns', 'failed', '初始化失败');
+                updateStatus('connection', 'failed', '初始化失败');
+                updateStatus('security', 'failed', '初始化失败');
+                updateStatus('resources', 'failed', '初始化失败');
             }
             
             // 注册Service Worker
@@ -1166,13 +1605,21 @@
     </script>
     
     <!-- 延迟加载非关键CSS -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap" crossorigin media="print" onload="this.media='all'">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap" crossorigin media="print" onload="this.media='all'">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" crossorigin media="print" onload="this.media='all'">
     
     <!-- 备用方案，当JavaScript禁用时 -->
     <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&display=swap">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+        <style>
+            .container { display: block !important; }
+            .btn-group { display: block !important; }
+            .btn { display: block !important; width: 100%; margin-bottom: 10px; }
+        </style>
+        <div style="position: fixed; top: 0; left: 0; right: 0; background: #ef233c; color: white; padding: 10px; text-align: center;">
+            您的浏览器禁用了JavaScript，请启用后使用安全跳转服务
+        </div>
     </noscript>
 </body>
 

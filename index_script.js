@@ -271,6 +271,7 @@ function displaySongs(songs) {
                         ${song.cover ? `
                             <img 
                                 src="placeholder.jpg"
+                                loading="lazy"
                                 data-src="${song.folderName}/${song.cover}" 
                                 alt="${song.title}" 
                                 class="lazy-image"
