@@ -8,24 +8,26 @@ let autoLoadEnabled = true; // 控制是否自动加载歌曲
 let isLoggedIn = false; // 登录状态
 
 // 检查登录状态
+
 function checkLoginStatus() {
     const userData = localStorage.getItem('userData');
     const loginButton = document.getElementById('loginButton');
     if (userData) {
-        const { phone, token, level, isGuest, expiry_date } = JSON.parse(userData);
+        const userObj = JSON.parse(userData);
+        const { phone, token, level, isGuest, expiry_date } = userObj;
         isLoggedIn = true;
-        
+
         // 添加登出按钮和用户图标
         loginButton.innerHTML = `
             ${isGuest ? '<i class="fas fa-user-clock"></i>' : '<i class="fas fa-user-check"></i>'}
             <button id="logoutButton" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
         `;
-        
+
         // 添加登出按钮事件监听
         const logoutButton = document.getElementById('logoutButton');
         if (logoutButton) {
             logoutButton.addEventListener('click', (e) => {
-                e.stopPropagation(); // 阻止事件冒泡到loginButton
+                e.stopPropagation();
                 logout();
             });
         }
@@ -36,23 +38,24 @@ function checkLoginStatus() {
                 showUserInfo();
             }
         });
-        
-        // 检查会员是否过期
-        const isExpired = expiry_date && new Date(expiry_date) < new Date();
-        if (isExpired && (level === 'vip' || level === 'diamond')) {
-            // 会员过期，降级为普通用户
-            const userData = JSON.parse(localStorage.getItem('userData'));
-            userData.level = 'normal';
-            localStorage.setItem('userData', JSON.stringify(userData));
-            level = 'normal';
-            showToast('会员已过期，已降级为普通用户');
+
+        // 检查会员是否过期（仅对VIP和钻石会员）
+        if ((level === 'vip' || level === 'diamond') && expiry_date) {
+            const expiryDate = parseCustomDateTime(expiry_date);
+            const currentDate = new Date();
+
+            if (expiryDate < currentDate) {
+                // 会员过期，降级为普通用户
+                userObj.level = 'normal';
+                localStorage.setItem('userData', JSON.stringify(userObj));
+                showToast('会员已过期，已降级为普通用户');
+            }
         }
 
-        // 根据用户等级控制广告和音乐播放
-        document.getElementById('adContainer').style.display = 'block';
-        if (level === 'vip' || level === 'diamond') {
-            document.getElementById('adContainer').style.display = 'none';
-        }
+        // 根据用户等级控制广告显示
+        document.getElementById('adContainer').style.display =
+            (level === 'vip' || level === 'diamond') ? 'none' : 'block';
+
         enableMusicPlayback();
     } else {
         isLoggedIn = false;
@@ -60,6 +63,31 @@ function checkLoginStatus() {
         document.getElementById('adContainer').style.display = 'block';
         disableMusicPlayback();
     }
+}
+
+// 辅助函数：解析自定义日期时间格式 "YYYY-MM-DD HH:mm:ss"
+function parseCustomDateTime(dateTimeStr) {
+    if (!dateTimeStr) return null;
+
+    // 替换空格为T以符合ISO格式
+    const isoStr = dateTimeStr.replace(' ', 'T');
+    const date = new Date(isoStr);
+
+    // 如果直接解析失败，尝试手动解析
+    if (isNaN(date.getTime())) {
+        const parts = dateTimeStr.split(/[- :]/);
+        if (parts.length >= 5) {
+            return new Date(
+                parseInt(parts[0]),  // 年
+                parseInt(parts[1]) - 1,  // 月（0-based）
+                parseInt(parts[2]),  // 日
+                parseInt(parts[3]),  // 时
+                parseInt(parts[4]),  // 分
+                parts[5] ? parseInt(parts[5]) : 0  // 秒
+            );
+        }
+    }
+    return date;
 }
 
 // 显示用户信息
@@ -83,9 +111,23 @@ function showUserInfo() {
 
     // 显示到期时间
     if (userData.expiry_date && (userData.level === 'vip' || userData.level === 'diamond')) {
-        const expiryDate = new Date(userData.expiry_date);
-        userExpiryDisplay.textContent = expiryDate.toLocaleDateString('zh-CN') + ' ' + 
-            expiryDate.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        const expiryDate = parseCustomDateTime(userData.expiry_date);
+
+        if (expiryDate && !isNaN(expiryDate.getTime())) {
+            // 格式化日期显示：YYYY年MM月DD日 HH:mm
+            const formattedDate = expiryDate.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            }).replace(/\//g, '-');
+
+            userExpiryDisplay.textContent = formattedDate;
+        } else {
+            userExpiryDisplay.textContent = '无效日期';
+        }
     } else {
         userExpiryDisplay.textContent = '无限期';
     }
@@ -137,7 +179,7 @@ function disableMusicPlayback() {
     songCards.forEach(card => {
         card.style.opacity = '0.5';
         card.style.pointerEvents = 'none';
-        
+
         // 添加禁用提示覆盖层
         if (!card.querySelector('.disabled-overlay')) {
             const overlay = document.createElement('div');
@@ -188,7 +230,7 @@ function initLoginModal() {
         try {
             const response = await fetch('admin/users.json');
             const users = await response.json();
-            
+
             const user = users.find(u => u.phone === phone);
             if (!user) {
                 showToast('用户不存在');
@@ -199,21 +241,21 @@ function initLoginModal() {
             const bcrypt = dcodeIO.bcrypt;
             const match = await bcrypt.compare(password, user.password);
 
+            // 在登录处理函数中（initLoginModal内的submitLogin事件处理）
             if (match) {
-                // 生成简单的token（实际应用中应该使用更安全的方式）
+                // 生成简单的token
                 const token = btoa(phone + ':' + Date.now());
                 localStorage.setItem('userData', JSON.stringify({
                     phone,
                     token,
                     level: user.level || 'normal',
-                    isGuest: false
+                    isGuest: false,
+                    expiry_date: user.expiry_date || null  // 确保从服务器获取到期时间
                 }));
                 isLoggedIn = true;
                 loginModal.style.display = 'none';
                 checkLoginStatus();
                 showToast('登录成功');
-            } else {
-                showToast('密码错误');
             }
         } catch (error) {
             console.error('登录失败:', error);
@@ -238,7 +280,7 @@ function initLoginModal() {
     });
 
     // 添加登出函数
-    window.logout = function() {
+    window.logout = function () {
         localStorage.removeItem('userData');
         isLoggedIn = false;
         checkLoginStatus();
@@ -317,12 +359,12 @@ async function loadSongs(page = 1) {
     if (page === 1) {
         await checkNetworkType();
     }
-    
+
     if (isLoading || !hasMoreSongs || (!autoLoadEnabled && page > 1)) return [];
-    
+
     isLoading = true;
     showLoadingIndicator();
-    
+
     try {
         // 首先从主songs.json获取歌曲名列表
         const response = await fetch('songs.json');
@@ -330,12 +372,12 @@ async function loadSongs(page = 1) {
             throw new Error('无法加载歌曲列表');
         }
         const allSongNames = await response.json();
-        
+
         // 计算当前页的歌曲范围
         const startIndex = (page - 1) * songsPerPage;
         const endIndex = startIndex + songsPerPage;
         const songNames = allSongNames.slice(startIndex, endIndex);
-        
+
         // 如果没有歌曲了，设置标志位
         if (songNames.length === 0) {
             hasMoreSongs = false;
@@ -343,7 +385,7 @@ async function loadSongs(page = 1) {
             isLoading = false;
             return [];
         }
-        
+
         // 为每个歌曲名创建一个Promise来获取详细信息
         const songPromises = songNames.map(async (songName, index) => {
             try {
@@ -381,14 +423,14 @@ async function loadSongs(page = 1) {
 
         // 过滤掉null值
         const newSongs = songsWithDetails.filter(song => song !== null);
-        
+
         // 更新全局变量
         if (page === 1) {
             allSongs = newSongs;
         } else {
             allSongs = [...allSongs, ...newSongs];
         }
-        
+
         currentPage = page;
         return newSongs;
     } catch (error) {
@@ -422,7 +464,7 @@ function checkScroll() {
     const scrollPosition = window.innerHeight + window.scrollY;
     const pageHeight = document.documentElement.scrollHeight;
     const threshold = 500; // 提前500px加载
-    
+
     // 如果接近底部且有更多歌曲可加载，并且当前没有正在加载
     if (scrollPosition > pageHeight - threshold && !isLoading && hasMoreSongs) {
         loadMoreSongs();
@@ -447,12 +489,12 @@ function formatTime(seconds) {
 // 显示歌曲卡片
 function displaySongs(songs) {
     const songGrid = document.getElementById('songGrid');
-    
+
     // 如果是第一页，清空网格
     if (currentPage === 1) {
         songGrid.innerHTML = '';
     }
-    
+
     // 移除之前的加载指示器（如果有）
     hideLoadingIndicator();
 
@@ -466,7 +508,7 @@ function displaySongs(songs) {
         if (document.querySelector(`.song-card[data-id="${song.id}"]`)) {
             return;
         }
-        
+
         const card = document.createElement('div');
         card.className = 'song-card';
         card.dataset.id = song.id;
@@ -694,7 +736,7 @@ function initPlayerControls() {
     // 播放歌曲函数
     window.playSong = function (song) {
         if (!song) return;
-        
+
         // 检查登录状态
         if (!isLoggedIn) {
             showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
