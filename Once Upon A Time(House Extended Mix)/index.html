@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>音乐播放器</title>
+    <!-- Font Awesome 6 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../assets/css/player.css">
+</head>
+
+<body>
+    <div class="glass-container">
+        <!-- 专辑封面部分 -->
+        <div class="album-art">
+            <div class="cover-container" id="cover-container">
+                <img src="" alt="专辑封面" class="cover-image" id="cover-image">
+            </div>
+            <div class="song-info">
+                <h1 class="song-title" id="song-title">歌曲加载中...</h1>
+                <p class="song-artist" id="song-artist"></p>
+            </div>
+            <div class="controls">
+                <div class="progress-container">
+                    <div class="time-display">
+                        <span id="current-time">00:00</span>
+                        <span id="total-time">00:00</span>
+                    </div>
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress" id="progress"></div>
+                    </div>
+                </div>
+                <div class="control-buttons">
+                    <button class="btn" id="btn-backward" title="后退15秒">
+                        <i class="fas fa-backward-step"></i>
+                    </button>
+                    <button class="btn btn-play" id="btn-play" title="播放/暂停">
+                        <i class="fas fa-play" id="play-icon"></i>
+                    </button>
+                    <button class="btn" id="btn-forward" title="前进15秒">
+                        <i class="fas fa-forward-step"></i>
+                    </button>
+                </div>
+                <div class="volume-container">
+                    <span class="volume-icon">
+                        <i class="fas fa-volume-high" id="volume-icon"></i>
+                    </span>
+                    <div class="volume-bar" id="volume-bar">
+                        <div class="volume-progress" id="volume-progress"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 歌词部分 -->
+        <div class="lyrics-container">
+            <h2 class="lyrics-title">歌词</h2>
+            <div class="lyrics-content" id="lyrics-content">
+                <div class="loading-message">歌词加载中...</div>
+            </div>
+        </div>
+
+        <!-- 视图切换指示器 -->
+        <div class="view-indicator">
+            <div class="indicator-dot active" data-view="album"></div>
+            <div class="indicator-dot" data-view="lyrics"></div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <!-- 音频元素 -->
+    <audio id="audio"></audio>
+
+    <!-- 脚本 -->
+    <script src="../assets/js/player.js"></script>
+</body>
+
+</html>
+</body>
+
+</html>
