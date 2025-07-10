@@ -463,7 +463,7 @@ function checkScroll() {
     const songGrid = document.getElementById('songGrid');
     const scrollPosition = window.innerHeight + window.scrollY;
     const pageHeight = document.documentElement.scrollHeight;
-    const threshold = 500; // 提前500px加载
+    const threshold = 1000; // 提前1000px加载
 
     // 如果接近底部且有更多歌曲可加载，并且当前没有正在加载
     if (scrollPosition > pageHeight - threshold && !isLoading && hasMoreSongs) {
