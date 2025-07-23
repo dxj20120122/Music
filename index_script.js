@@ -1,312 +1,10 @@
 // 定义全局变量
 let allSongs = [];
 let currentPage = 1;
-const songsPerPage = 30; // 每页加载的歌曲数量
+const songsPerPage = 10; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
-let isLoggedIn = false; // 登录状态
-
-// 检查登录状态
-
-function checkLoginStatus() {
-    const userData = localStorage.getItem('userData');
-    const loginButton = document.getElementById('loginButton');
-    if (userData) {
-        const userObj = JSON.parse(userData);
-        const { phone, token, level, isGuest, expiry_date } = userObj;
-        isLoggedIn = true;
-
-        // 添加登出按钮和用户图标
-        loginButton.innerHTML = `
-            ${isGuest ? '<i class="fas fa-user-clock"></i>' : '<i class="fas fa-user-check"></i>'}
-            <button id="logoutButton" class="logout-btn"><i class="fas fa-sign-out-alt"></i></button>
-        `;
-
-        // 添加登出按钮事件监听
-        const logoutButton = document.getElementById('logoutButton');
-        if (logoutButton) {
-            logoutButton.addEventListener('click', (e) => {
-                e.stopPropagation();
-                logout();
-            });
-        }
-
-        // 添加用户信息点击事件
-        loginButton.addEventListener('click', () => {
-            if (isLoggedIn) {
-                showUserInfo();
-            }
-        });
-
-        // 检查会员是否过期（仅对VIP和钻石会员）
-        if ((level === 'vip' || level === 'diamond') && expiry_date) {
-            const expiryDate = parseCustomDateTime(expiry_date);
-            const currentDate = new Date();
-
-            if (expiryDate < currentDate) {
-                // 会员过期，降级为普通用户
-                userObj.level = 'normal';
-                localStorage.setItem('userData', JSON.stringify(userObj));
-                showToast('会员已过期，已降级为普通用户');
-            }
-        }
-
-        // 根据用户等级控制广告显示
-        document.getElementById('adContainer').style.display =
-            (level === 'vip' || level === 'diamond') ? 'none' : 'block';
-
-        enableMusicPlayback();
-    } else {
-        isLoggedIn = false;
-        loginButton.innerHTML = '<i class="fas fa-user"></i>';
-        document.getElementById('adContainer').style.display = 'block';
-        disableMusicPlayback();
-    }
-}
-
-// 辅助函数：解析自定义日期时间格式 "YYYY-MM-DD HH:mm:ss"
-function parseCustomDateTime(dateTimeStr) {
-    if (!dateTimeStr) return null;
-
-    // 替换空格为T以符合ISO格式
-    const isoStr = dateTimeStr.replace(' ', 'T');
-    const date = new Date(isoStr);
-
-    // 如果直接解析失败，尝试手动解析
-    if (isNaN(date.getTime())) {
-        const parts = dateTimeStr.split(/[- :]/);
-        if (parts.length >= 5) {
-            return new Date(
-                parseInt(parts[0]),  // 年
-                parseInt(parts[1]) - 1,  // 月（0-based）
-                parseInt(parts[2]),  // 日
-                parseInt(parts[3]),  // 时
-                parseInt(parts[4]),  // 分
-                parts[5] ? parseInt(parts[5]) : 0  // 秒
-            );
-        }
-    }
-    return date;
-}
-
-// 显示用户信息
-function showUserInfo() {
-    const userInfoModal = document.getElementById('userInfoModal');
-    const closeUserInfoModal = document.getElementById('closeUserInfoModal');
-    const userLevelDisplay = document.getElementById('userLevelDisplay');
-    const userExpiryDisplay = document.getElementById('userExpiryDisplay');
-    const userBenefitsList = document.getElementById('userBenefitsList');
-
-    const userData = JSON.parse(localStorage.getItem('userData'));
-    if (!userData) return;
-
-    // 显示等级
-    const levelNames = {
-        normal: '普通用户',
-        vip: 'VIP用户',
-        diamond: '皇钻用户'
-    };
-    userLevelDisplay.textContent = levelNames[userData.level] || '普通用户';
-
-    // 显示到期时间
-    if (userData.expiry_date && (userData.level === 'vip' || userData.level === 'diamond')) {
-        const expiryDate = parseCustomDateTime(userData.expiry_date);
-
-        if (expiryDate && !isNaN(expiryDate.getTime())) {
-            // 格式化日期显示：YYYY年MM月DD日 HH:mm
-            const formattedDate = expiryDate.toLocaleString('zh-CN', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            }).replace(/\//g, '-');
-
-            userExpiryDisplay.textContent = formattedDate;
-        } else {
-            userExpiryDisplay.textContent = '无效日期';
-        }
-    } else {
-        userExpiryDisplay.textContent = '无限期';
-    }
-
-    // 显示权益
-    const benefits = {
-        normal: ['可免费听所有歌曲', '有广告'],
-        vip: ['无广告', '可联系站长添加歌曲 (每月限20首)', '每月10元'],
-        diamond: ['无广告', '可联系站长添加歌曲', '每月20元']
-    };
-    userBenefitsList.innerHTML = benefits[userData.level]
-        .map(benefit => `<li>${benefit}</li>`)
-        .join('');
-
-    userInfoModal.style.display = 'block';
-
-    closeUserInfoModal.addEventListener('click', () => {
-        userInfoModal.style.display = 'none';
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === userInfoModal) {
-            userInfoModal.style.display = 'none';
-        }
-    });
-}
-
-// 启用音乐播放功能
-function enableMusicPlayback() {
-    if (!isLoggedIn) {
-        disableMusicPlayback();
-        return;
-    }
-    const songCards = document.querySelectorAll('.song-card');
-    songCards.forEach(card => {
-        card.style.opacity = '1';
-        card.style.pointerEvents = 'auto';
-        // 移除禁用提示（如果存在）
-        const disabledOverlay = card.querySelector('.disabled-overlay');
-        if (disabledOverlay) {
-            card.removeChild(disabledOverlay);
-        }
-    });
-}
-
-// 禁用音乐播放功能
-function disableMusicPlayback() {
-    const songCards = document.querySelectorAll('.song-card');
-    songCards.forEach(card => {
-        card.style.opacity = '0.5';
-        card.style.pointerEvents = 'none';
-
-        // 添加禁用提示覆盖层
-        if (!card.querySelector('.disabled-overlay')) {
-            const overlay = document.createElement('div');
-            overlay.className = 'disabled-overlay';
-            overlay.innerHTML = `
-                <i class="fas fa-lock"></i>
-                <p>请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听</p>
-            `;
-            card.appendChild(overlay);
-        }
-    });
-}
-
-// 初始化登录模态框
-function initLoginModal() {
-    const loginButton = document.getElementById('loginButton');
-    const loginModal = document.getElementById('loginModal');
-    const closeLoginModal = document.getElementById('closeLoginModal');
-    const submitLogin = document.getElementById('submitLogin');
-    const phoneInput = document.getElementById('phoneInput');
-    const passwordInput = document.getElementById('passwordInput');
-
-    loginButton.addEventListener('click', () => {
-        if (!isLoggedIn) {
-            loginModal.style.display = 'block';
-        }
-    });
-
-    closeLoginModal.addEventListener('click', () => {
-        loginModal.style.display = 'none';
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === loginModal) {
-            loginModal.style.display = 'none';
-        }
-    });
-
-    submitLogin.addEventListener('click', async () => {
-        const phone = phoneInput.value.trim();
-        const password = passwordInput.value.trim();
-
-        if (!phone || !password) {
-            showToast('请填写完整信息');
-            return;
-        }
-
-        try {
-            const response = await fetch('admin/users.json');
-            const users = await response.json();
-
-            const user = users.find(u => u.phone === phone);
-            if (!user) {
-                showToast('用户不存在');
-                return;
-            }
-
-            // 使用 bcrypt.js 进行密码验证
-            const bcrypt = dcodeIO.bcrypt;
-            const match = await bcrypt.compare(password, user.password);
-
-            // 在登录处理函数中（initLoginModal内的submitLogin事件处理）
-            if (match) {
-                // 生成简单的token
-                const token = btoa(phone + ':' + Date.now());
-                localStorage.setItem('userData', JSON.stringify({
-                    phone,
-                    token,
-                    level: user.level || 'normal',
-                    isGuest: false,
-                    expiry_date: user.expiry_date || null  // 确保从服务器获取到期时间
-                }));
-                isLoggedIn = true;
-                loginModal.style.display = 'none';
-                checkLoginStatus();
-                showToast('登录成功');
-            }
-        } catch (error) {
-            console.error('登录失败:', error);
-            showToast('登录失败，请稍后重试');
-        }
-    });
-
-    // 游客登录
-    document.getElementById('guestLogin').addEventListener('click', () => {
-        const guestData = {
-            phone: 'guest_' + Date.now(),
-            token: btoa('guest:' + Date.now()),
-            level: 'normal',
-            isGuest: true,
-            loginTime: Date.now() // 记录登录时间
-        };
-        localStorage.setItem('userData', JSON.stringify(guestData));
-        isLoggedIn = true;
-        loginModal.style.display = 'none';
-        checkLoginStatus();
-        showToast('已使用游客账号登录');
-    });
-
-    // 添加登出函数
-    window.logout = function () {
-        localStorage.removeItem('userData');
-        isLoggedIn = false;
-        checkLoginStatus();
-        showToast('已退出登录');
-    };
-
-    // 检查游客登录时效性
-    function checkGuestValidity() {
-        const userData = localStorage.getItem('userData');
-        if (userData) {
-            const data = JSON.parse(userData);
-            if (data.isGuest) {
-                const loginTime = data.loginTime;
-                const currentTime = Date.now();
-                // 如果登录时间超过当前会话，自动登出
-                if (!loginTime || loginTime < currentTime - (24 * 60 * 60 * 1000)) { // 24小时后过期
-                    logout();
-                }
-            }
-        }
-    }
-
-    // 定期检查游客登录状态
-    setInterval(checkGuestValidity, 60000); // 每分钟检查一次
-    window.addEventListener('focus', checkGuestValidity); // 窗口获得焦点时检查
-}
 
 // 检测网络连接类型
 async function checkNetworkType() {
@@ -359,12 +57,12 @@ async function loadSongs(page = 1) {
     if (page === 1) {
         await checkNetworkType();
     }
-
+    
     if (isLoading || !hasMoreSongs || (!autoLoadEnabled && page > 1)) return [];
-
+    
     isLoading = true;
     showLoadingIndicator();
-
+    
     try {
         // 首先从主songs.json获取歌曲名列表
         const response = await fetch('songs.json');
@@ -372,12 +70,12 @@ async function loadSongs(page = 1) {
             throw new Error('无法加载歌曲列表');
         }
         const allSongNames = await response.json();
-
+        
         // 计算当前页的歌曲范围
         const startIndex = (page - 1) * songsPerPage;
         const endIndex = startIndex + songsPerPage;
         const songNames = allSongNames.slice(startIndex, endIndex);
-
+        
         // 如果没有歌曲了，设置标志位
         if (songNames.length === 0) {
             hasMoreSongs = false;
@@ -385,7 +83,7 @@ async function loadSongs(page = 1) {
             isLoading = false;
             return [];
         }
-
+        
         // 为每个歌曲名创建一个Promise来获取详细信息
         const songPromises = songNames.map(async (songName, index) => {
             try {
@@ -423,14 +121,14 @@ async function loadSongs(page = 1) {
 
         // 过滤掉null值
         const newSongs = songsWithDetails.filter(song => song !== null);
-
+        
         // 更新全局变量
         if (page === 1) {
             allSongs = newSongs;
         } else {
             allSongs = [...allSongs, ...newSongs];
         }
-
+        
         currentPage = page;
         return newSongs;
     } catch (error) {
@@ -463,8 +161,8 @@ function checkScroll() {
     const songGrid = document.getElementById('songGrid');
     const scrollPosition = window.innerHeight + window.scrollY;
     const pageHeight = document.documentElement.scrollHeight;
-    const threshold = 1000; // 提前1000px加载
-
+    const threshold = 500; // 提前500px加载
+    
     // 如果接近底部且有更多歌曲可加载，并且当前没有正在加载
     if (scrollPosition > pageHeight - threshold && !isLoading && hasMoreSongs) {
         loadMoreSongs();
@@ -489,12 +187,12 @@ function formatTime(seconds) {
 // 显示歌曲卡片
 function displaySongs(songs) {
     const songGrid = document.getElementById('songGrid');
-
+    
     // 如果是第一页，清空网格
     if (currentPage === 1) {
         songGrid.innerHTML = '';
     }
-
+    
     // 移除之前的加载指示器（如果有）
     hideLoadingIndicator();
 
@@ -508,7 +206,7 @@ function displaySongs(songs) {
         if (document.querySelector(`.song-card[data-id="${song.id}"]`)) {
             return;
         }
-
+        
         const card = document.createElement('div');
         card.className = 'song-card';
         card.dataset.id = song.id;
@@ -564,10 +262,6 @@ function displaySongs(songs) {
         const playBtn = card.querySelector('.play-button');
         playBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (!isLoggedIn) {
-                showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
-                return;
-            }
             playSong(song);
         });
 
@@ -615,10 +309,6 @@ function displaySongs(songs) {
 
         // 点击卡片跳转到歌曲目录
         card.addEventListener('click', () => {
-            if (!isLoggedIn) {
-                showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后查看');
-                return;
-            }
             window.location.href = `${song.folderName}/`;
         });
 
@@ -737,12 +427,6 @@ function initPlayerControls() {
     window.playSong = function (song) {
         if (!song) return;
 
-        // 检查登录状态
-        if (!isLoggedIn) {
-            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
-            return;
-        }
-
         // 更新当前播放列表和索引
         const songGrid = document.getElementById('songGrid');
         playingPlaylist = Array.from(songGrid.querySelectorAll('.song-card')).map(card => {
@@ -759,7 +443,6 @@ function initPlayerControls() {
             })
             .catch(error => {
                 console.error('播放失败:', error);
-                showToast('播放失败，请稍后重试');
             });
 
         // 更新播放器信息
@@ -786,11 +469,6 @@ function initPlayerControls() {
 
     // 播放/暂停按钮点击事件
     playButton.addEventListener('click', () => {
-        if (!isLoggedIn) {
-            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
-            return;
-        }
-
         if (audioElement.paused) {
             audioElement.play()
                 .then(() => {
@@ -798,7 +476,6 @@ function initPlayerControls() {
                 })
                 .catch(error => {
                     console.error('播放失败:', error);
-                    showToast('播放失败，请稍后重试');
                 });
         } else {
             audioElement.pause();
@@ -807,22 +484,10 @@ function initPlayerControls() {
     });
 
     // 上一首按钮点击事件
-    prevButton.addEventListener('click', () => {
-        if (!isLoggedIn) {
-            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
-            return;
-        }
-        playPrev();
-    });
+    prevButton.addEventListener('click', playPrev);
 
     // 下一首按钮点击事件
-    nextButton.addEventListener('click', () => {
-        if (!isLoggedIn) {
-            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
-            return;
-        }
-        playNext();
-    });
+    nextButton.addEventListener('click', playNext);
 
     // 歌曲结束时自动播放下一首
     audioElement.addEventListener('ended', playNext);
@@ -841,10 +506,6 @@ function initPlayerControls() {
 
     // 点击进度条跳转
     progressBar.addEventListener('click', (e) => {
-        if (!isLoggedIn) {
-            showToast('请点击右上角登录图标登录 | 使用游客账户登录  &  登录后收听');
-            return;
-        }
         const rect = progressBar.getBoundingClientRect();
         const pos = (e.clientX - rect.left) / rect.width;
         audioElement.currentTime = pos * audioElement.duration;
