@@ -1282,6 +1282,34 @@ h1 {
     animation: spin 1s ease-in-out infinite;
 }
 
+/* 清除缓存按钮 */
+#clearCacheButton {
+  margin-left: 10px;
+  color: var(--text-color);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: color 0.3s;
+}
+
+#clearCacheButton:hover {
+  color: var(--primary-color);
+}
+
+/* 确认对话框样式 */
+.swal2-popup {
+  font-family: 'Poppins', sans-serif;
+}
+
+.swal2-title {
+  color: var(--text-color);
+}
+
+.swal2-content {
+  color: var(--text-secondary);
+}
+
 @keyframes spin {
     to {
         transform: rotate(360deg);

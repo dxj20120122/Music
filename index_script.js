@@ -1,10 +1,54 @@
 // 定义全局变量
 let allSongs = [];
 let currentPage = 1;
-const songsPerPage = 10; // 每页加载的歌曲数量
+const songsPerPage = 30; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
+
+// 注册 Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('ServiceWorker 注册成功:', registration.scope);
+      })
+      .catch(error => {
+        console.log('ServiceWorker 注册失败:', error);
+      });
+  });
+}
+
+// 清除缓存功能
+document.getElementById('clearCacheButton').addEventListener('click', () => {
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    // 显示确认对话框
+    const confirmed = confirm('确定要清除所有缓存数据吗？这可能会暂时影响应用性能。');
+    if (!confirmed) return;
+    
+    // 创建消息通道
+    const messageChannel = new MessageChannel();
+    
+    // 监听响应
+    messageChannel.port1.onmessage = (event) => {
+      if (event.data.success) {
+        showToast('缓存已清除');
+        // 可选：重新加载页面以获取最新资源
+        window.location.reload();
+      } else {
+        showToast('清除缓存失败: ' + (event.data.error || '未知错误'));
+      }
+    };
+    
+    // 发送清除缓存消息
+    navigator.serviceWorker.controller.postMessage(
+      { type: 'CLEAR_CACHE' },
+      [messageChannel.port2]
+    );
+  } else {
+    showToast('Service Worker 未激活，无法清除缓存');
+  }
+});
 
 // 检测网络连接类型
 async function checkNetworkType() {
