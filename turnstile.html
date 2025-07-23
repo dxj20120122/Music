@@ -799,13 +799,13 @@
             // 验证流程
             tryPassiveVerification() {
                 // 如果已经有足够高的分数，直接通过验证
-                if (this.behaviorScore >= this.passingScore * 1.2) {
+                if (this.behaviorScore >= this.passingScore * 1.0) {
                     this.passVerification();
                     return;
                 }
 
                 // 如果分数中等，等待更多行为数据
-                if (this.behaviorScore >= this.passingScore * 0.7) {
+                if (this.behaviorScore >= this.passingScore * 0.5) {
                     setTimeout(() => {
                         // 再次检查分数
                         if (this.behaviorScore >= this.passingScore) {
