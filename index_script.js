@@ -386,12 +386,29 @@ function displaySongs(songs) {
 }
 
 // 播放歌曲预览
-function playSong(song) {
+async function playSong(song) {
     const audioPlayer = document.getElementById('audioPlayer');
     const audioElement = document.getElementById('audioElement');
     const playerTitle = document.getElementById('playerTitle');
     const playerArtist = document.getElementById('playerArtist');
     const playButton = document.getElementById('playButton');
+
+    // 如果正在播放同一首歌，则暂停/继续播放
+    if (currentPlayingSong && currentPlayingSong.id === song.id) {
+        if (audioElement.paused) {
+            try {
+                await audioElement.play();
+                playButton.innerHTML = '<i class="fas fa-pause"></i>';
+            } catch (error) {
+                console.error('播放失败:', error);
+                showToast('播放失败，请重试');
+            }
+        } else {
+            audioElement.pause();
+            playButton.innerHTML = '<i class="fas fa-play"></i>';
+        }
+        return;
+    }
 
     // 设置当前播放的歌曲
     currentPlayingSong = song;
@@ -410,38 +427,61 @@ function playSong(song) {
 
     // 显示加载状态
     playButton.classList.add('loading');
-    
-    // 设置音频源
-    audioElement.src = `${song.folderName}/${song.audio}`;
-    
-    // 音频加载事件
-    audioElement.oncanplay = () => {
-        playButton.classList.remove('loading');
-    };
-    
-    audioElement.onerror = () => {
-        playButton.classList.remove('loading');
-        showToast('播放失败，请重试');
-    };
+    playButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    // 播放音乐
-    audioElement.play()
-        .then(() => {
-            playButton.innerHTML = '<i class="fas fa-pause"></i>';
-            playButton.classList.remove('loading');
-        })
-        .catch(error => {
-            console.error('播放失败:', error);
-            playButton.classList.remove('loading');
-            showToast('无法播放歌曲');
+    try {
+        // 暂停当前播放并重置
+        audioElement.pause();
+        audioElement.currentTime = 0;
+
+        // 移除所有事件监听器以避免冲突
+        audioElement.oncanplay = null;
+        audioElement.onerror = null;
+        audioElement.onplay = null;
+
+        // 设置音频源
+        audioElement.src = `${song.folderName}/${song.audio}`;
+
+        // 等待音频可以播放
+        await new Promise((resolve, reject) => {
+            const handleCanPlay = () => {
+                audioElement.removeEventListener('canplay', handleCanPlay);
+                audioElement.removeEventListener('error', handleError);
+                resolve();
+            };
+
+            const handleError = (err) => {
+                audioElement.removeEventListener('canplay', handleCanPlay);
+                audioElement.removeEventListener('error', handleError);
+                reject(err);
+            };
+
+            audioElement.addEventListener('canplay', handleCanPlay, { once: true });
+            audioElement.addEventListener('error', handleError, { once: true });
+
+            // 开始加载音频
+            audioElement.load();
         });
 
-    // 更新进度条
-    updateProgressBar();
+        // 尝试播放
+        await audioElement.play();
+        playButton.classList.remove('loading');
+        playButton.innerHTML = '<i class="fas fa-pause"></i>';
 
-    // 提高当前播放歌曲的优先级
-    loadSongResources(song, true);
+        // 更新进度条
+        updateProgressBar();
+
+        // 提高当前播放歌曲的优先级
+        loadSongResources(song, true);
+    } catch (error) {
+        console.error('播放失败:', error);
+        playButton.classList.remove('loading');
+        playButton.innerHTML = '<i class="fas fa-play"></i>';
+        showToast('播放失败，请重试');
+    }
 }
+
+
 
 
 // 显示提示
@@ -462,17 +502,23 @@ function updateProgressBar() {
     const currentTimeDisplay = document.getElementById('currentTime');
     const durationDisplay = document.getElementById('duration');
 
-    // 设置总时长
-    audioElement.addEventListener('loadedmetadata', () => {
-        durationDisplay.textContent = formatTime(audioElement.duration);
-    });
+    // 清除旧的事件监听器
+    audioElement.removeEventListener('timeupdate', updateTime);
+    audioElement.removeEventListener('loadedmetadata', updateDuration);
 
-    // 更新进度
-    audioElement.addEventListener('timeupdate', () => {
+    function updateTime() {
         const progress = (audioElement.currentTime / audioElement.duration) * 100;
         progressFill.style.width = `${progress}%`;
         currentTimeDisplay.textContent = formatTime(audioElement.currentTime);
-    });
+    }
+
+    function updateDuration() {
+        durationDisplay.textContent = formatTime(audioElement.duration);
+    }
+
+    // 设置新的事件监听器
+    audioElement.addEventListener('timeupdate', updateTime);
+    audioElement.addEventListener('loadedmetadata', updateDuration);
 
     // 点击进度条跳转
     const progressBar = document.getElementById('progressBar');
@@ -481,6 +527,7 @@ function updateProgressBar() {
         audioElement.currentTime = percent * audioElement.duration;
     });
 }
+
 
 // 搜索歌曲
 function searchSongs(songs, query) {

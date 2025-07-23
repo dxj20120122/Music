@@ -1405,6 +1405,51 @@ h1 {
     animation: spin 1s linear infinite;
 }
 
+/* 添加到 index_styles.css */
+.fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.player-button.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+/* 添加到 index_styles.css */
+.player-button.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.player-button.loading i {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 音频播放器加载状态 */
+.audio-loading::after {
+    content: "";
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+
 
 /* 移动数据下的特殊样式 */
 @media (max-width: 768px), (pointer: coarse) {
