@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡顿问题解决方案</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        h2 {
+            color: #3498db;
+            margin: 25px 0 15px;
+            font-size: 22px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .problem-section {
+            margin-bottom: 30px;
+        }
+        
+        .solution {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .solution h3 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .step {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .step-number {
+            background-color: #3498db;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+        
+        .tip {
+            background-color: #e8f4fc;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>卡顿问题解决方案</h1>
+        
+        <div class="problem-section">
+            <h2>卡顿原因</h2>
+            <p>卡顿可能由多种因素引起，以下是几种常见原因：</p>
+            <ul style="margin-left: 20px; margin-top: 10px;">
+                <li>作者太穷了，买不起宽带，导致加载变慢或者断断续续</li>
+                <li>设备老旧/浏览器老旧</li>
+                <li>网络原因</li>
+            </ul>
+        </div>
+        
+        <div class="problem-section">
+            <h2>基础解决方案</h2>
+            
+            <div class="solution">
+                <h3>1. 下载音乐/项目到本地 <a href="https://github.com/dxj20120122/Music" target="_blank">点击至项目</a></h3>
+            </div>
+
+            <div class="solution">
+                <h3>2. 赞助作者拉高宽带 <a href="https://donation.moujie.dpdns.org/" target="_blank">点击赞助</a></h3>
+            </div>
+
+            <div class="solution">
+                <h3>3. 升级设备&使用现代浏览器</h3>
+            </div>
+
+            <div class="solution">
+                <h3>temp 临时解决方案 <a href="./oldIndex.html" class="nav-link" target="_blank">使用旧版播放器 可以缓解卡顿</a></h3>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
