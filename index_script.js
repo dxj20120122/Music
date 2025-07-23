@@ -5,18 +5,30 @@ const songsPerPage = 50; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
+let isMobileData = false; // 是否移动数据环境
+let currentPlayingSong = null; // 当前播放的歌曲
+let visibleSongIds = new Set(); // 当前可见区域的歌曲ID
 
 // 检测网络连接类型
 async function checkNetworkType() {
     if ('connection' in navigator) {
         const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
         if (connection.type === 'cellular') {
+            isMobileData = true;
             // 使用移动数据时询问用户
             const userChoice = await showNetworkPrompt();
             autoLoadEnabled = userChoice;
+
+            // 移动数据下优化显示
+            document.body.classList.add('mobile-data');
+            document.querySelectorAll('.song-image img').forEach(img => {
+                img.style.display = 'none';
+            });
         } else {
             // WiFi或其他网络类型时自动加载
+            isMobileData = false;
             autoLoadEnabled = true;
+            document.body.classList.remove('mobile-data');
         }
     }
 }
@@ -52,17 +64,17 @@ function showNetworkPrompt() {
 }
 
 // 从songs.json加载歌曲数据
-async function loadSongs(page = 1) {
+async function loadSongs(page = 1, prioritySongId = null) {
     // 首次加载时检查网络类型
     if (page === 1) {
         await checkNetworkType();
     }
-    
+
     if (isLoading || !hasMoreSongs || (!autoLoadEnabled && page > 1)) return [];
-    
+
     isLoading = true;
     showLoadingIndicator();
-    
+
     try {
         // 首先从主songs.json获取歌曲名列表
         const response = await fetch('songs.json');
@@ -70,12 +82,12 @@ async function loadSongs(page = 1) {
             throw new Error('无法加载歌曲列表');
         }
         const allSongNames = await response.json();
-        
+
         // 计算当前页的歌曲范围
         const startIndex = (page - 1) * songsPerPage;
         const endIndex = startIndex + songsPerPage;
         const songNames = allSongNames.slice(startIndex, endIndex);
-        
+
         // 如果没有歌曲了，设置标志位
         if (songNames.length === 0) {
             hasMoreSongs = false;
@@ -83,7 +95,7 @@ async function loadSongs(page = 1) {
             isLoading = false;
             return [];
         }
-        
+
         // 为每个歌曲名创建一个Promise来获取详细信息
         const songPromises = songNames.map(async (songName, index) => {
             try {
@@ -99,14 +111,21 @@ async function loadSongs(page = 1) {
                 if (Array.isArray(songDetails) && songDetails.length > 0) {
                     // 获取第一个元素作为歌曲详情
                     const songDetail = songDetails[0];
+                    const songId = (startIndex + index) + 1;
+
+                    // 如果是优先加载的歌曲，立即加载音频
+                    const shouldPreloadAudio = prioritySongId === songId ||
+                        (currentPlayingSong && currentPlayingSong.id === songId);
+
                     return {
-                        id: (startIndex + index) + 1, // 确保ID唯一
+                        id: songId,
                         title: songDetail.title || songName,
                         artist: songDetail.artist || '',
                         folderName: songName,
                         cover: songDetail.cover || '',
                         audio: songDetail.audio || '',
-                        lyrics: songDetail.lyrics || ''
+                        lyrics: songDetail.lyrics || '',
+                        shouldPreloadAudio: shouldPreloadAudio
                     };
                 }
                 return null;
@@ -121,14 +140,14 @@ async function loadSongs(page = 1) {
 
         // 过滤掉null值
         const newSongs = songsWithDetails.filter(song => song !== null);
-        
+
         // 更新全局变量
         if (page === 1) {
             allSongs = newSongs;
         } else {
             allSongs = [...allSongs, ...newSongs];
         }
-        
+
         currentPage = page;
         return newSongs;
     } catch (error) {
@@ -162,10 +181,52 @@ function checkScroll() {
     const scrollPosition = window.innerHeight + window.scrollY;
     const pageHeight = document.documentElement.scrollHeight;
     const threshold = 500; // 提前500px加载
-    
+
     // 如果接近底部且有更多歌曲可加载，并且当前没有正在加载
     if (scrollPosition > pageHeight - threshold && !isLoading && hasMoreSongs) {
         loadMoreSongs();
+    }
+
+    // 更新可见区域歌曲
+    updateVisibleSongs();
+}
+
+// 更新当前可见区域的歌曲
+function updateVisibleSongs() {
+    const songCards = document.querySelectorAll('.song-card');
+    const newVisibleSongIds = new Set();
+
+    songCards.forEach(card => {
+        const rect = card.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+            const songId = parseInt(card.dataset.id);
+            newVisibleSongIds.add(songId);
+
+            // 如果歌曲从不可见变为可见，提高其加载优先级
+            if (!visibleSongIds.has(songId)) {
+                const song = allSongs.find(s => s.id === songId);
+                if (song) {
+                    loadSongResources(song, true);
+                }
+            }
+        }
+    });
+
+    visibleSongIds = newVisibleSongIds;
+}
+
+// 加载歌曲资源（封面和音频）
+function loadSongResources(song, isPriority = false) {
+    // 如果是移动数据环境，不加载封面
+    if (!isMobileData && song.cover) {
+        const img = new Image();
+        img.src = `${song.folderName}/${song.cover}`;
+    }
+
+    // 如果是优先加载的歌曲或当前播放的歌曲，预加载音频
+    if (isPriority || song.shouldPreloadAudio) {
+        const audio = new Audio();
+        audio.src = `${song.folderName}/${song.audio}`;
     }
 }
 
@@ -187,12 +248,12 @@ function formatTime(seconds) {
 // 显示歌曲卡片
 function displaySongs(songs) {
     const songGrid = document.getElementById('songGrid');
-    
+
     // 如果是第一页，清空网格
     if (currentPage === 1) {
         songGrid.innerHTML = '';
     }
-    
+
     // 移除之前的加载指示器（如果有）
     hideLoadingIndicator();
 
@@ -206,7 +267,7 @@ function displaySongs(songs) {
         if (document.querySelector(`.song-card[data-id="${song.id}"]`)) {
             return;
         }
-        
+
         const card = document.createElement('div');
         card.className = 'song-card';
         card.dataset.id = song.id;
@@ -240,8 +301,8 @@ function displaySongs(songs) {
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
         card.innerHTML = `
-            <div class="song-image" style="${song.cover ? '' : `background: ${randomColor}`}">
-                ${song.cover ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
+            <div class="song-image" style="${song.cover && !isMobileData ? '' : `background: ${randomColor}`}">
+                ${song.cover && !isMobileData ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
                 <button class="play-button">
                     <i class="fas fa-play"></i>
                 </button>
@@ -313,7 +374,13 @@ function displaySongs(songs) {
         });
 
         songGrid.appendChild(card);
+
+        // 加载歌曲资源
+        loadSongResources(song, song.shouldPreloadAudio);
     });
+
+    // 更新可见区域歌曲
+    updateVisibleSongs();
 }
 
 // 播放歌曲预览
@@ -323,6 +390,14 @@ function playSong(song) {
     const playerTitle = document.getElementById('playerTitle');
     const playerArtist = document.getElementById('playerArtist');
     const playButton = document.getElementById('playButton');
+
+    // 设置当前播放的歌曲
+    currentPlayingSong = song;
+
+    // 标记所有歌曲的预加载状态
+    allSongs.forEach(s => {
+        s.shouldPreloadAudio = s.id === song.id;
+    });
 
     // 设置播放器信息
     playerTitle.textContent = song.title;
@@ -346,6 +421,9 @@ function playSong(song) {
 
     // 更新进度条
     updateProgressBar();
+
+    // 提高当前播放歌曲的优先级
+    loadSongResources(song, true);
 }
 
 // 显示提示
@@ -832,7 +910,7 @@ function updatePlaylistList() {
 }
 
 // 创建歌单
-async function createPlaylist() {
+function createPlaylist() {
     const name = document.getElementById('playlistName').value.trim();
     const desc = document.getElementById('playlistDesc').value.trim();
 
@@ -936,21 +1014,12 @@ async function updatePlaylistSongsList(playlistId, order = 'list') {
             item.className = 'playlist-song-item';
             item.dataset.id = song.id;
             item.innerHTML = `
-                <div class="playlist-song-item-image" style="background: ${randomColor}">${song.title.charAt(0)}</div>
-                <div class="playlist-song-item-info">
-                    <div class="playlist-song-item-title">${song.title}</div>
-                    <div class="playlist-song-item-artist">${song.artist}</div>
-                </div>
-                <div class="playlist-song-item-actions">
-                    <button class="playlist-song-action-button play-song" data-id="${song.id}">
-                        <i class="fas fa-play"></i>
-                    </button>
-                    <button class="playlist-song-action-button remove-from-playlist" data-id="${song.id}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
 
+${song.title.charAt(0)}
+${song.title}
+${song.artist}
+ 
+`;
             // 播放歌曲
             const playBtn = item.querySelector('.play-song');
             playBtn.addEventListener('click', (e) => {
@@ -981,12 +1050,6 @@ async function updatePlaylistSongsList(playlistId, order = 'list') {
 }
 
 // 从歌单中移除歌曲
-/**
- * Removes a song from a specified playlist in localStorage.
- * @param {string} playlistId - The ID of the playlist to modify
- * @param {string|number} songId - The ID of the song to remove (will be converted to string)
- * @returns {void} Updates localStorage and UI, shows toast notifications
- */
 function removeSongFromPlaylist(playlistId, songId) {
     const playlists = JSON.parse(localStorage.getItem('playlists')) || [];
     const playlistIndex = playlists.findIndex(p => p.id === playlistId);
@@ -1044,18 +1107,12 @@ function updateAddToPlaylistList(song) {
             item.className = 'playlist-item';
             item.dataset.id = playlist.id;
             item.innerHTML = `
-                <div class="playlist-item-image" style="background: ${randomColor}">${playlist.name.charAt(0)}</div>
-                <div class="playlist-item-info">
-                    <div class="playlist-item-title">${playlist.name}</div>
-                    <div class="playlist-item-count">${playlist.songs.length} 首歌曲</div>
-                </div>
-                <div class="playlist-item-actions">
-                    <button class="playlist-action-button ${isInPlaylist ? 'remove-from-playlist' : 'add-to-playlist'}" data-id="${playlist.id}">
-                        <i class="fas ${isInPlaylist ? 'fa-check' : 'fa-plus'}"></i>
-                    </button>
-                </div>
-            `;
 
+${playlist.name.charAt(0)}
+${playlist.name}
+${playlist.songs.length} 首歌曲
+
+`;
             // 添加/移除歌曲
             const actionBtn = item.querySelector('.playlist-action-button');
             actionBtn.addEventListener('click', (e) => {
@@ -1063,12 +1120,12 @@ function updateAddToPlaylistList(song) {
 
                 if (isInPlaylist) {
                     removeSongFromPlaylist(playlist.id, song.id);
-                    actionBtn.innerHTML = '<i class="fas fa-plus"></i>';
+                    actionBtn.innerHTML = '';
                     actionBtn.classList.remove('remove-from-playlist');
                     actionBtn.classList.add('add-to-playlist');
                 } else {
                     addSongToPlaylist(playlist.id, song.id);
-                    actionBtn.innerHTML = '<i class="fas fa-check"></i>';
+                    actionBtn.innerHTML = '';
                     actionBtn.classList.remove('add-to-playlist');
                     actionBtn.classList.add('remove-from-playlist');
                 }
