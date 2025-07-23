@@ -1449,6 +1449,55 @@ h1 {
     vertical-align: middle;
 }
 
+/* 平铺模式样式 */
+.song-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.song-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--box-shadow);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.song-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(93, 93, 255, 0.1);
+    background-color: rgba(93, 93, 255, 0.05);
+}
+
+.song-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.song-artist {
+    font-size: 14px;
+    color: var(--secondary-color);
+}
+
+/* 移除不需要的元素 */
+.song-image, 
+.play-button, 
+.favorite-button, 
+.add-to-playlist-button {
+    display: none !important;
+}
+
+/* 隐藏视图切换按钮 */
+.view-controls {
+    display: none;
+}
+
 
 
 /* 移动数据下的特殊样式 */

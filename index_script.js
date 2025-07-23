@@ -236,7 +236,7 @@ function formatTime(seconds) {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
-// 显示歌曲卡片
+// 显示歌曲卡片（平铺模式）
 function displaySongs(songs) {
     const songGrid = document.getElementById('songGrid');
 
@@ -263,116 +263,25 @@ function displaySongs(songs) {
         card.className = 'song-card';
         card.dataset.id = song.id;
 
-        // 生成随机颜色渐变
-        const colors = [
-            'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
-            'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
-            'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
-            'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
-            'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)',
-            'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)',
-            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
-            'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)',
-            'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
-            'linear-gradient(135deg, #f9d423 0%, #ff4e50 100%)',
-            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
-            'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)',
-            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
-            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
-            'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)',
-            'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)',
-            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            'linear-gradient(135deg, #f9d423 0%, #ff4e50 100%)',
-            'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)'
-        ];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
         card.innerHTML = `
-            <div class="song-image" style="${song.cover && !isMobileData ? '' : `background: ${randomColor}`}">
-                ${song.cover && !isMobileData ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
-                <button class="play-button">
-                    <i class="fas fa-play"></i>
-                </button>
-                <button class="favorite-button" data-id="${song.id}">
-                    <i class="fas fa-heart"></i>
-                </button>
-                <button class="add-to-playlist-button" data-id="${song.id}">
-                    <i class="fas fa-plus"></i>
-                </button>
-            </div>
             <div class="song-info">
                 <div class="song-title" title="${song.title}">${song.title}</div>
                 <div class="song-artist">${song.artist}</div>
             </div>
         `;
 
-        // 添加点击事件，播放歌曲预览
-        const playBtn = card.querySelector('.play-button');
-        playBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
+        // 点击卡片播放歌曲
+        card.addEventListener('click', () => {
             playSong(song);
         });
 
-        // 添加收藏按钮点击事件
-        const favoriteBtn = card.querySelector('.favorite-button');
-
-        // 从localStorage加载收藏状态
-        const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-        if (favorites[song.id]) {
-            favoriteBtn.classList.add('favorited');
-            favoriteBtn.querySelector('i').style.color = 'var(--primary-color)';
-            favoriteBtn.querySelector('i').style.webkitTextStroke = '0';
-        }
-
-        favoriteBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
-            const isFavorited = favoriteBtn.classList.toggle('favorited');
-
-            // 更新本地存储
-            const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
-            favorites[song.id] = isFavorited;
-            localStorage.setItem('favorites', JSON.stringify(favorites));
-
-            // 更新按钮样式
-            if (isFavorited) {
-                favoriteBtn.querySelector('i').style.color = 'var(--primary-color)';
-                favoriteBtn.querySelector('i').style.webkitTextStroke = '0';
-                showToast('已收藏');
-            } else {
-                favoriteBtn.querySelector('i').style.color = 'transparent';
-                favoriteBtn.querySelector('i').style.webkitTextStroke = '1px var(--primary-color)';
-                showToast('已取消收藏');
-            }
-        });
-
-        // 添加添加到歌单按钮点击事件
-        const addToPlaylistBtn = card.querySelector('.add-to-playlist-button');
-        addToPlaylistBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openAddToPlaylistModal(song);
-        });
-
-        // 点击卡片跳转到歌曲目录
-        card.addEventListener('click', () => {
-            window.location.href = `${song.folderName}/`;
-        });
-
         songGrid.appendChild(card);
-
-        // 加载歌曲封面资源
-        loadSongResources(song);
     });
 
     // 更新可见区域歌曲
     updateVisibleSongs();
 }
+
 
 
 // 播放歌曲预览
