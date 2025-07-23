@@ -193,14 +193,13 @@
                     scrolls: [],
                     keyPresses: [],
                     deviceInfo: {},
-                    networkRequests: [],
-                    interactionTiming: []
+                    networkRequests: []
                 };
 
                 this.initElements();
                 this.setupEventListeners();
+                this.collectDeviceFingerprint();
                 this.monitorNetworkRequests();
-                this.startInteractionTimer();
 
                 // 尝试无感验证
                 setTimeout(() => this.tryPassiveVerification(), 2000);
@@ -215,42 +214,25 @@
                 this.behaviorDataElement = document.getElementById('behaviorData');
             }
 
-            startInteractionTimer() {
-                this.interactionStartTime = Date.now();
-                this.lastActiveTime = Date.now();
-
-                // 每5秒检查一次活动状态
-                this.inactivityTimer = setInterval(() => {
-                    const now = Date.now();
-                    if (now - this.lastActiveTime > 10000) { // 10秒不活动
-                        this.behaviorScore -= 5;
-                    }
-                }, 5000);
-            }
-
             setupEventListeners() {
-                // 鼠标移动跟踪（优化：节流处理）
-                const recordMouseMove = (e) => {
+                // 鼠标移动跟踪
+                document.addEventListener('mousemove', (e) => {
                     this.recordMouseMovement(e);
-                    this.lastActiveTime = Date.now();
-                };
-                document.addEventListener('mousemove', throttle(recordMouseMove, 100));
+                });
 
                 // 点击跟踪
                 document.addEventListener('click', (e) => {
-                    this.lastActiveTime = Date.now();
+                    this.recordClick(e);
                 });
 
-                // 滚动跟踪（优化：防抖处理）
-                window.addEventListener('scroll', debounce((e) => {
+                // 滚动跟踪
+                window.addEventListener('scroll', (e) => {
                     this.recordScroll(e);
-                    this.lastActiveTime = Date.now();
-                }, 200), true);
+                }, true);
 
                 // 键盘输入跟踪
                 document.addEventListener('keydown', (e) => {
                     this.recordKeyPress(e);
-                    this.lastActiveTime = Date.now();
                 });
 
                 // 验证按钮点击
@@ -258,30 +240,17 @@
                     this.verifyHuman();
                 });
 
-                // 输入框输入验证（优化：更智能的输入分析）
+                // 输入框输入验证
                 this.humanInput.addEventListener('input', () => {
-                    const input = this.humanInput.value;
-                    if (input === "我不是机器人") {
-                        this.behaviorScore += 15; // 正确输入加分
-                    } else if (input.length > 0 && "我不是机器人".startsWith(input)) {
-                        this.behaviorScore += 2; // 部分正确加分
-                    } else if (input.length > 0) {
-                        this.behaviorScore -= 5; // 错误输入减分
+                    if (this.humanInput.value === "我不是机器人") {
+                        this.behaviorScore += 10; // 正确输入加分
+                    } else {
+                        this.behaviorScore -= 15; // 错误输入减分
                     }
-
-                    // 记录输入间隔
-                    const now = Date.now();
-                    if (this.lastInputTime) {
-                        this.behaviorData.interactionTiming.push({
-                            type: 'input',
-                            interval: now - this.lastInputTime
-                        });
-                    }
-                    this.lastInputTime = now;
                 });
             }
 
-            // 优化的行为分析方法
+            // 行为分析方法
             recordMouseMovement(e) {
                 const now = Date.now();
                 const movement = {
@@ -289,8 +258,7 @@
                     y: e.clientY,
                     time: now,
                     speed: 0,
-                    acceleration: 0,
-                    pathLength: 0
+                    acceleration: 0
                 };
 
                 if (this.behaviorData.mouseMovements.length > 0) {
@@ -302,7 +270,6 @@
                             Math.pow(movement.y - last.y, 2)
                         );
                         movement.speed = distance / timeDiff;
-                        movement.pathLength = last.pathLength + distance;
 
                         if (this.behaviorData.mouseMovements.length > 1) {
                             const lastSpeed = last.speed;
@@ -313,93 +280,541 @@
 
                 this.behaviorData.mouseMovements.push(movement);
 
-                // 实时分析鼠标行为
-                if (this.behaviorData.mouseMovements.length % 10 === 0) {
-                    this.analyzeMouseBehavior();
-                }
+                // 分析鼠标轨迹
+                this.analyzeMouseBehavior();
             }
 
-            // 优化的分析方法
+            recordClick(e) {
+                const now = Date.now();
+                const click = {
+                    x: e.clientX,
+                    y: e.clientY,
+                    time: now
+                };
+
+                if (this.behaviorData.clicks.length > 0) {
+                    const lastClick = this.behaviorData.clicks[this.behaviorData.clicks.length - 1];
+                    click.interval = now - lastClick.time;
+                }
+
+                this.behaviorData.clicks.push(click);
+
+                // 分析点击模式
+                this.analyzeClickPattern();
+            }
+
+            recordScroll(e) {
+                const now = Date.now();
+                const scroll = {
+                    position: window.scrollY,
+                    time: now,
+                    speed: 0
+                };
+
+                if (this.behaviorData.scrolls.length > 0) {
+                    const lastScroll = this.behaviorData.scrolls[this.behaviorData.scrolls.length - 1];
+                    const timeDiff = (now - lastScroll.time) / 1000;
+                    if (timeDiff > 0) {
+                        scroll.speed = Math.abs(scroll.position - lastScroll.position) / timeDiff;
+                    }
+                }
+
+                this.behaviorData.scrolls.push(scroll);
+
+                // 分析滚动行为
+                this.analyzeScrollBehavior();
+            }
+
+            recordKeyPress(e) {
+                const now = Date.now();
+                const keyPress = {
+                    key: e.key,
+                    code: e.code,
+                    time: now,
+                    interval: 0
+                };
+
+                if (this.behaviorData.keyPresses.length > 0) {
+                    const lastKeyPress = this.behaviorData.keyPresses[this.behaviorData.keyPresses.length - 1];
+                    keyPress.interval = now - lastKeyPress.time;
+                }
+
+                this.behaviorData.keyPresses.push(keyPress);
+
+                // 分析键盘输入模式
+                this.analyzeTypingPattern();
+            }
+
+            // 行为分析方法
             analyzeMouseBehavior() {
                 const movements = this.behaviorData.mouseMovements;
-                if (movements.length < 5) return;
+                if (movements.length < 3) return;
 
-                // 1. 检查鼠标速度变化（人类通常有变化）
-                const speeds = movements.map(m => m.speed).filter(s => s > 0);
-                const speedVariation = this.calculateVariation(speeds);
-
-                // 人类通常有中等速度变化
-                if (speedVariation > 0.3 && speedVariation < 1.5) {
-                    this.behaviorScore += 8;
-                } else if (speedVariation <= 0.3) {
-                    this.behaviorScore -= 10; // 过于规律可能是机器人
+                // 检查鼠标速度变化
+                const speedVariation = this.calculateVariation(movements.map(m => m.speed));
+                if (speedVariation > 0.5) {
+                    this.behaviorScore += 5; // 人类鼠标移动速度变化较大
                 }
 
-                // 2. 检查加速度模式
-                const accelerations = movements.map(m => m.acceleration).filter(a => !isNaN(a));
-                const accelPattern = this.detectPattern(accelerations);
-
-                // 人类加速度通常不规则
-                if (accelPattern.regularity < 0.4) {
-                    this.behaviorScore += 5;
+                // 检查加速度模式
+                const accelerationPattern = this.detectPattern(movements.map(m => m.acceleration));
+                if (accelerationPattern.regularity < 0.3) {
+                    this.behaviorScore += 5; // 人类鼠标加速度不规则
                 }
 
-                // 3. 检查轨迹特征
-                const recentMovements = movements.slice(-20);
-                if (recentMovements.length >= 3) {
-                    const linearity = this.checkMovementLinearity(recentMovements);
-                    const curvature = this.calculatePathCurvature(recentMovements);
-
-                    // 人类轨迹通常既不完全直线也不完全曲线
-                    if (linearity > 0.4 && linearity < 0.9) {
-                        this.behaviorScore += 5;
-                    }
-
-                    // 中等曲率加分
-                    if (curvature > 0.2 && curvature < 0.8) {
-                        this.behaviorScore += 3;
-                    }
-                }
-
-                // 4. 检查移动路径长度与直线距离比
-                if (movements.length >= 10) {
-                    const start = movements[0];
-                    const end = movements[movements.length - 1];
-                    const straightDist = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
-                    const pathRatio = end.pathLength / (straightDist || 1);
-
-                    // 人类通常有1.2-2.5的路径比
-                    if (pathRatio > 1.2 && pathRatio < 2.5) {
-                        this.behaviorScore += 5;
-                    }
+                // 检查轨迹直线性
+                const linearity = this.checkMovementLinearity(movements.slice(-20));
+                if (linearity < 0.7) {
+                    this.behaviorScore += 5; // 人类鼠标轨迹不完全是直线
                 }
             }
 
-            // 新增方法：计算路径曲率
-            calculatePathCurvature(movements) {
+            analyzeClickPattern() {
+                const clicks = this.behaviorData.clicks;
+                if (clicks.length < 3) return;
+
+                // 检查点击间隔变化
+                const intervals = clicks.map((c, i) => i > 0 ? c.interval : 0).filter(i => i > 0);
+                const intervalVariation = this.calculateVariation(intervals);
+                if (intervalVariation > 0.4) {
+                    this.behaviorScore += 5; // 人类点击间隔变化较大
+                }
+
+                // 检查点击位置分布
+                const positionVariance = this.calculatePositionVariance(clicks.map(c => ({ x: c.x, y: c.y })));
+                if (positionVariance > 10000) {
+                    this.behaviorScore += 5; // 人类点击位置分散
+                }
+            }
+
+            analyzeScrollBehavior() {
+                const scrolls = this.behaviorData.scrolls;
+                if (scrolls.length < 3) return;
+
+                // 检查滚动速度变化
+                const speedVariation = this.calculateVariation(scrolls.map(s => s.speed));
+                if (speedVariation > 0.6) {
+                    this.behaviorScore += 5; // 人类滚动速度变化较大
+                }
+
+                // 检查滚动方向变化
+                const directionChanges = this.countDirectionChanges(scrolls);
+                if (directionChanges > scrolls.length * 0.3) {
+                    this.behaviorScore += 5; // 人类经常改变滚动方向
+                }
+            }
+
+            analyzeTypingPattern() {
+                const keyPresses = this.behaviorData.keyPresses;
+                if (keyPresses.length < 3) return;
+
+                // 检查输入间隔变化
+                const intervals = keyPresses.map((k, i) => i > 0 ? k.interval : 0).filter(i => i > 0);
+                const intervalVariation = this.calculateVariation(intervals);
+                if (intervalVariation > 0.5) {
+                    this.behaviorScore += 5; // 人类输入间隔变化较大
+                }
+
+                // 检查常见的人类输入错误和修正
+                const corrections = this.detectTypingCorrections(keyPresses);
+                if (corrections > 0) {
+                    this.behaviorScore += corrections * 2; // 人类会犯输入错误并修正
+                }
+            }
+
+            // 设备指纹收集
+            collectDeviceFingerprint() {
+                this.behaviorData.deviceInfo = {
+                    userAgent: navigator.userAgent,
+                    platform: navigator.platform,
+                    hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+                    deviceMemory: navigator.deviceMemory || 'unknown',
+                    screenResolution: `${window.screen.width}x${window.screen.height}`,
+                    colorDepth: window.screen.colorDepth,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    languages: navigator.languages,
+                    cookieEnabled: navigator.cookieEnabled,
+                    doNotTrack: navigator.doNotTrack || 'unspecified',
+                    webglVendor: this.getWebGLInfo(),
+                    canvasFingerprint: this.getCanvasFingerprint(),
+                    audioContextFingerprint: this.getAudioContextFingerprint(),
+                    fonts: this.detectInstalledFonts(),
+                    plugins: this.getBrowserPlugins(),
+                    touchSupport: 'ontouchstart' in window,
+                    batteryApi: 'getBattery' in navigator
+                };
+
+                // 分析设备指纹
+                this.analyzeDeviceFingerprint();
+            }
+
+            getWebGLInfo() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                    if (!gl) return 'unsupported';
+
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    return {
+                        vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+                        renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+                    };
+                } catch (e) {
+                    return 'error';
+                }
+            }
+
+            getCanvasFingerprint() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = 200;
+                    canvas.height = 50;
+
+                    // 绘制一些文本和形状
+                    ctx.textBaseline = 'top';
+                    ctx.font = '14px Arial';
+                    ctx.fillStyle = '#f60';
+                    ctx.fillRect(0, 0, 50, 50);
+                    ctx.fillStyle = '#069';
+                    ctx.fillText('Canvas Fingerprint', 60, 15);
+
+                    // 添加复杂形状
+                    ctx.strokeStyle = 'rgb(120, 186, 176)';
+                    ctx.beginPath();
+                    ctx.moveTo(60, 30);
+                    ctx.lineTo(120, 30);
+                    ctx.lineTo(120, 40);
+                    ctx.lineTo(60, 40);
+                    ctx.closePath();
+                    ctx.stroke();
+
+                    return canvas.toDataURL().slice(-32); // 取部分数据作为指纹
+                } catch (e) {
+                    return 'error';
+                }
+            }
+
+            getAudioContextFingerprint() {
+                try {
+                    if (!window.AudioContext && !window.webkitAudioContext) return 'unsupported';
+
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const analyser = audioContext.createAnalyser();
+                    const gainNode = audioContext.createGain();
+                    const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+
+                    oscillator.type = 'triangle';
+                    oscillator.connect(analyser);
+                    analyser.connect(scriptProcessor);
+                    scriptProcessor.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+
+                    oscillator.start(0);
+
+                    const audioData = new Float32Array(analyser.frequencyBinCount);
+                    analyser.getFloatFrequencyData(audioData);
+
+                    oscillator.stop();
+                    audioContext.close();
+
+                    // 计算音频指纹
+                    let hash = 0;
+                    for (let i = 0; i < audioData.length; i++) {
+                        hash += Math.abs(audioData[i]);
+                    }
+
+                    return hash.toString(16).slice(0, 8);
+                } catch (e) {
+                    return 'error';
+                }
+            }
+
+            detectInstalledFonts() {
+                const fontList = [
+                    'Arial', 'Arial Black', 'Comic Sans MS', 'Courier New',
+                    'Georgia', 'Impact', 'Times New Roman', 'Trebuchet MS',
+                    'Verdana', 'Microsoft YaHei', 'SimSun', 'SimHei',
+                    'KaiTi', 'FangSong', 'STXihei', 'STKaiti', 'STSong',
+                    'STFangsong', 'Andale Mono', 'Baskerville'
+                ];
+
+                const detectedFonts = [];
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 200;
+                canvas.height = 50;
+
+                // 使用基线测试法检测字体
+                const baselineText = 'mmmmmmmmmmlli';
+                const referenceWidths = {};
+
+                // 首先测量默认字体的宽度
+                context.font = '72px monospace';
+                referenceWidths['monospace'] = context.measureText(baselineText).width;
+
+                // 测试每种字体
+                fontList.forEach(font => {
+                    context.font = `72px "${font}", monospace`;
+                    const width = context.measureText(baselineText).width;
+
+                    if (width !== referenceWidths['monospace']) {
+                        detectedFonts.push(font);
+                    }
+                });
+
+                return detectedFonts;
+            }
+
+            getBrowserPlugins() {
+                const plugins = [];
+                if (navigator.plugins) {
+                    for (let i = 0; i < navigator.plugins.length; i++) {
+                        plugins.push(navigator.plugins[i].name);
+                    }
+                }
+                return plugins;
+            }
+
+            analyzeDeviceFingerprint() {
+                // 检查常见自动化工具的指纹特征
+                const ua = this.behaviorData.deviceInfo.userAgent.toLowerCase();
+
+                // 检查Headless浏览器
+                if (ua.includes('headless') ||
+                    ua.includes('phantom') ||
+                    ua.includes('puppeteer') ||
+                    ua.includes('selenium') ||
+                    !this.behaviorData.deviceInfo.webglVendor ||
+                    this.behaviorData.deviceInfo.webglVendor === 'error') {
+                    this.behaviorScore -= 20; // 可能是自动化工具
+                } else {
+                    this.behaviorScore += 10; // 正常浏览器指纹
+                }
+
+                // 检查字体数量异常
+                if (this.behaviorData.deviceInfo.fonts.length < 3) {
+                    this.behaviorScore -= 10; // 字体太少可能是自动化环境
+                }
+
+                // 检查插件数量异常
+                if (this.behaviorData.deviceInfo.plugins.length === 0 &&
+                    navigator.plugins && navigator.plugins.length === 0) {
+                    this.behaviorScore -= 5; // 无插件可能是自动化环境
+                }
+            }
+
+            // 网络请求监控
+            monitorNetworkRequests() {
+                const originalFetch = window.fetch;
+                const originalXHROpen = XMLHttpRequest.prototype.open;
+                const originalXHRSend = XMLHttpRequest.prototype.send;
+
+                // 拦截fetch请求
+                window.fetch = async (...args) => {
+                    const startTime = Date.now();
+                    try {
+                        const response = await originalFetch(...args);
+                        this.recordNetworkRequest({
+                            type: 'fetch',
+                            url: args[0],
+                            method: args[1]?.method || 'GET',
+                            startTime,
+                            endTime: Date.now(),
+                            status: response.status
+                        });
+                        return response;
+                    } catch (error) {
+                        this.recordNetworkRequest({
+                            type: 'fetch',
+                            url: args[0],
+                            method: args[1]?.method || 'GET',
+                            startTime,
+                            endTime: Date.now(),
+                            status: 'error',
+                            error: error.message
+                        });
+                        throw error;
+                    }
+                };
+
+                // 拦截XMLHttpRequest
+                XMLHttpRequest.prototype.open = function (method, url) {
+                    this._requestDetails = {
+                        method,
+                        url,
+                        startTime: Date.now()
+                    };
+                    return originalXHROpen.apply(this, arguments);
+                };
+
+                XMLHttpRequest.prototype.send = function (body) {
+                    const xhr = this;
+                    const details = xhr._requestDetails;
+
+                    xhr.addEventListener('load', function () {
+                        details.endTime = Date.now();
+                        details.status = xhr.status;
+                        this.recordNetworkRequest(details);
+                    }.bind(this));
+
+                    xhr.addEventListener('error', function () {
+                        details.endTime = Date.now();
+                        details.status = 'error';
+                        details.error = 'Request failed';
+                        this.recordNetworkRequest(details);
+                    }.bind(this));
+
+                    return originalXHRSend.apply(xhr, arguments);
+                };
+            }
+
+            recordNetworkRequest(request) {
+                this.behaviorData.networkRequests.push(request);
+
+                // 分析请求模式
+                if (this.behaviorData.networkRequests.length > 3) {
+                    this.analyzeNetworkPatterns();
+                }
+            }
+
+            analyzeNetworkPatterns() {
+                const requests = this.behaviorData.networkRequests;
+
+                // 检查请求时间间隔
+                const intervals = [];
+                for (let i = 1; i < requests.length; i++) {
+                    intervals.push(requests[i].startTime - requests[i - 1].endTime);
+                }
+
+                const intervalVariation = this.calculateVariation(intervals);
+                if (intervalVariation < 0.3) {
+                    this.behaviorScore -= 10; // 请求间隔过于规律可能是自动化脚本
+                }
+
+                // 检查请求URL多样性
+                const uniqueUrls = [...new Set(requests.map(r => r.url))].length;
+                if (uniqueUrls < requests.length * 0.3 && requests.length > 5) {
+                    this.behaviorScore -= 5; // URL多样性不足可能是爬虫
+                }
+            }
+
+            // 辅助分析方法
+            calculateVariation(values) {
+                if (values.length < 2) return 0;
+
+                const mean = values.reduce((a, b) => a + b, 0) / values.length;
+                const variance = values.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / values.length;
+                return Math.sqrt(variance) / mean;
+            }
+
+            calculatePositionVariance(positions) {
+                if (positions.length < 2) return 0;
+
+                const meanX = positions.reduce((a, b) => a + b.x, 0) / positions.length;
+                const meanY = positions.reduce((a, b) => a + b.y, 0) / positions.length;
+
+                const varianceX = positions.reduce((a, b) => a + Math.pow(b.x - meanX, 2), 0) / positions.length;
+                const varianceY = positions.reduce((a, b) => a + Math.pow(b.y - meanY, 2), 0) / positions.length;
+
+                return varianceX + varianceY;
+            }
+
+            countDirectionChanges(scrolls) {
+                let changes = 0;
+                let lastDirection = 0;
+
+                for (let i = 1; i < scrolls.length; i++) {
+                    const direction = Math.sign(scrolls[i].position - scrolls[i - 1].position);
+                    if (direction !== 0 && direction !== lastDirection) {
+                        changes++;
+                        lastDirection = direction;
+                    }
+                }
+
+                return changes;
+            }
+
+            detectPattern(values) {
+                const diffs = [];
+                for (let i = 1; i < values.length; i++) {
+                    diffs.push(values[i] - values[i - 1]);
+                }
+
+                const meanDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
+                const diffVariance = diffs.reduce((a, b) => a + Math.pow(b - meanDiff, 2), 0) / diffs.length;
+
+                return {
+                    mean: meanDiff,
+                    variance: diffVariance,
+                    regularity: diffVariance === 0 ? 1 : 1 / (1 + diffVariance)
+                };
+            }
+
+            checkMovementLinearity(movements) {
                 if (movements.length < 3) return 0;
 
-                let totalAngle = 0;
-                for (let i = 1; i < movements.length - 1; i++) {
-                    const prev = movements[i - 1];
-                    const curr = movements[i];
-                    const next = movements[i + 1];
+                // 计算起点和终点
+                const start = { x: movements[0].x, y: movements[0].y };
+                const end = { x: movements[movements.length - 1].x, y: movements[movements.length - 1].y };
 
-                    const v1 = { x: curr.x - prev.x, y: curr.y - prev.y };
-                    const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+                // 计算直线距离
+                const lineLength = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
 
-                    const dot = v1.x * v2.x + v1.y * v2.y;
-                    const mag1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
-                    const mag2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
-
-                    const angle = Math.acos(dot / (mag1 * mag2 || 1));
-                    totalAngle += angle;
+                // 计算实际路径长度
+                let pathLength = 0;
+                for (let i = 1; i < movements.length; i++) {
+                    pathLength += Math.sqrt(
+                        Math.pow(movements[i].x - movements[i - 1].x, 2) +
+                        Math.pow(movements[i].y - movements[i - 1].y, 2)
+                    );
                 }
 
-                return totalAngle / (movements.length - 2);
+                // 计算直线性 (0-1, 1表示完全直线)
+                return lineLength / pathLength;
             }
 
-            // 优化的验证流程
+            detectTypingCorrections(keyPresses) {
+                let corrections = 0;
+
+                // 检查退格键使用
+                const backspaceCount = keyPresses.filter(k => k.key === 'Backspace').length;
+                if (backspaceCount > 0) {
+                    corrections += Math.min(backspaceCount, 3); // 最多加3分
+                }
+
+                // 检查方向键使用
+                const arrowKeysCount = keyPresses.filter(k =>
+                    k.key === 'ArrowLeft' || k.key === 'ArrowRight' ||
+                    k.key === 'ArrowUp' || k.key === 'ArrowDown'
+                ).length;
+                if (arrowKeysCount > 0) {
+                    corrections += Math.min(arrowKeysCount, 2); // 最多加2分
+                }
+
+                return corrections;
+            }
+
+            // 验证流程
+            tryPassiveVerification() {
+                // 如果已经有足够高的分数，直接通过验证
+                if (this.behaviorScore >= this.passingScore * 1.2) {
+                    this.passVerification();
+                    return;
+                }
+
+                // 如果分数中等，等待更多行为数据
+                if (this.behaviorScore >= this.passingScore * 0.7) {
+                    setTimeout(() => {
+                        // 再次检查分数
+                        if (this.behaviorScore >= this.passingScore) {
+                            this.passVerification();
+                        }
+                    }, 3000);
+                }
+            }
+
             verifyHuman() {
                 // 检查输入是否正确
                 if (this.humanInput.value !== "我不是机器人") {
@@ -409,105 +824,85 @@
 
                 this.showLoading();
 
-                // 综合评分（优化评分算法）
+                // 模拟网络请求延迟
                 setTimeout(() => {
+                    // 综合评分
                     const finalScore = this.calculateFinalScore();
-                    const confidence = this.calculateConfidenceLevel();
 
-                    if (finalScore >= this.passingScore && confidence >= 0.7) {
+                    if (finalScore >= this.passingScore) {
                         this.passVerification();
                     } else {
-                        let errorMsg = "验证失败";
-                        if (confidence < 0.7) errorMsg += "：行为模式异常";
-                        if (finalScore < this.passingScore * 0.5) errorMsg += "：分数过低";
-
-                        this.showError(errorMsg);
-                        this.behaviorScore = Math.max(0, this.behaviorScore - 10); // 失败后降分
+                        this.showError("验证失败，您的行为模式不符合人类特征");
                     }
                 }, 1500);
             }
 
-            // 新增方法：计算置信度
-            calculateConfidenceLevel() {
-                let confidence = 0.5; // 基础置信度
+            calculateFinalScore() {
+                // 基础分数
+                let finalScore = this.behaviorScore;
 
-                // 1. 检查鼠标行为置信度
-                if (this.behaviorData.mouseMovements.length >= 20) {
-                    const recentMoves = this.behaviorData.mouseMovements.slice(-20);
-                    const linearity = this.checkMovementLinearity(recentMoves);
-                    const curvature = this.calculatePathCurvature(recentMoves);
-
-                    // 理想的人类线性度和曲率范围
-                    if (linearity > 0.4 && linearity < 0.9 && curvature > 0.2 && curvature < 0.8) {
-                        confidence += 0.2;
-                    }
+                // 输入正确的加分
+                if (this.humanInput.value === "我不是机器人") {
+                    finalScore += 10;
+                } else {
+                    finalScore -= 15; // 错误输入减分
                 }
 
-                // 2. 检查输入模式置信度
-                if (this.behaviorData.keyPresses.length >= 10) {
-                    const intervals = [];
-                    for (let i = 1; i < this.behaviorData.keyPresses.length; i++) {
-                        intervals.push(this.behaviorData.keyPresses[i].time - this.behaviorData.keyPresses[i - 1].time);
-                    }
-                    const variation = this.calculateVariation(intervals);
-
-                    // 人类输入间隔通常有中等变化
-                    if (variation > 0.4 && variation < 1.2) {
-                        confidence += 0.15;
-                    }
+                // 检查是否有足够的行为数据
+                if (this.behaviorData.mouseMovements.length < 10 ||
+                    this.behaviorData.clicks.length < 3 ||
+                    this.behaviorData.keyPresses.length < 5) {
+                    finalScore -= 15; // 行为数据不足
                 }
 
-                // 3. 检查设备指纹置信度
-                if (this.behaviorData.deviceInfo.fonts.length >= 5 &&
-                    this.behaviorData.deviceInfo.plugins.length > 0) {
-                    confidence += 0.1;
-                }
-
-                // 4. 检查活动时间置信度
-                const activeTime = (this.lastActiveTime - this.interactionStartTime) / 1000;
-                if (activeTime > 3 && activeTime < 60) { // 合理交互时间
-                    confidence += 0.05;
-                }
-
-                return Math.min(1, confidence); // 不超过1
+                // 确保分数在合理范围内
+                return Math.max(0, Math.min(finalScore, this.maxScore));
             }
 
-            // 其他方法保持不变...
-        }
+            // UI 控制方法
+            showLoading() {
+                this.verifyButton.disabled = true;
+                this.loadingIndicator.style.display = 'block';
+                this.errorMessage.style.display = 'none';
+            }
 
-        // 新增工具函数：节流
-        function throttle(func, limit) {
-            let lastFunc;
-            let lastRan;
-            return function () {
-                const context = this;
-                const args = arguments;
-                if (!lastRan) {
-                    func.apply(context, args);
-                    lastRan = Date.now();
-                } else {
-                    clearTimeout(lastFunc);
-                    lastFunc = setTimeout(function () {
-                        if ((Date.now() - lastRan) >= limit) {
-                            func.apply(context, args);
-                            lastRan = Date.now();
-                        }
-                    }, limit - (Date.now() - lastRan));
-                }
-            };
-        }
+            showError(message) {
+                this.verifyButton.disabled = false;
+                this.loadingIndicator.style.display = 'none';
+                this.errorMessage.textContent = message;
+                this.errorMessage.style.display = 'block';
+            }
 
-        // 新增工具函数：防抖
-        function debounce(func, wait) {
-            let timeout;
-            return function () {
-                const context = this;
-                const args = arguments;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => {
-                    func.apply(context, args);
-                }, wait);
-            };
+            passVerification() {
+                this.verificationPassed = true;
+                this.loadingIndicator.style.display = 'none';
+                this.successMessage.style.display = 'block';
+                this.verifyButton.style.display = 'none';
+                this.humanInput.style.display = 'none';
+
+                // ✅ 发送消息给父窗口（建议指定目标 origin）
+                window.parent.postMessage(
+                    { type: 'turnstileVerified', success: true },
+                    window.location.origin  // 或者 '*'（不推荐，可能有安全问题）
+                );
+
+                // 3秒后关闭验证（可选）
+                setTimeout(() => {
+                    const event = new CustomEvent('turnstileVerified', {
+                        detail: { success: true, score: this.calculateFinalScore() }
+                    });
+                    document.dispatchEvent(event);
+                }, 2000);
+            }
+
+            // 公开方法
+            getVerificationStatus() {
+                return {
+                    verified: this.verificationPassed,
+                    score: this.calculateFinalScore(),
+                    data: this.behaviorData
+                };
+            }
         }
 
         // 初始化验证
@@ -516,17 +911,10 @@
 
             // 暴露API供外部调用
             window.Turnstile = {
-                getStatus: () => turnstile.getVerificationStatus(),
-                reset: () => {
-                    document.querySelector('.turnstile-error').style.display = 'none';
-                    document.getElementById('humanInput').value = '';
-                    document.getElementById('verifyButton').style.display = 'block';
-                    document.getElementById('verifyButton').disabled = false;
-                }
+                getStatus: () => turnstile.getVerificationStatus()
             };
         });
     </script>
-
 </body>
 
 </html>
