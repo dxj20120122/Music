@@ -167,12 +167,15 @@
         </div>
         <div class="turnstile-body">
             <p class="turnstile-message">请确认您不是机器人</p>
-            <input type="text" class="turnstile-input" id="humanInput" placeholder="输入“我不是机器人”以验证" />
-            <button class="turnstile-button" id="verifyButton">验证</button>
-            <div class="turnstile-loading" id="loadingIndicator"></div>
-            <p class="turnstile-success" id="successMessage">验证成功！正在加载内容...</p>
-            <p class="turnstile-error" id="errorMessage">验证失败，请重试</p>
-            <div class="turnstile-behavior-data" id="behaviorData"></div>
+            <p>采用最新无感刷新认证模式</p>
+            <h2>现在请你轻晃鼠标或多次点击屏幕</h2>
+            <p>时间 50s 超过时间请自行刷新再次尝试！</p>
+            <input type="text" class="turnstile-input" id="humanInput" placeholder="输入“我不是机器人”以验证" style="display: none;"/>
+            <button class="turnstile-button" id="verifyButton" style="display: none;">验证</button>
+            <div class="turnstile-loading" id="loadingIndicator" style="display: none;"></div>
+            <p class="turnstile-success" id="successMessage" style="display: none;">验证成功！正在加载内容...</p>
+            <p class="turnstile-error" id="errorMessage" style="display: none;">验证失败，请重试</p>
+            <div class="turnstile-behavior-data" id="behaviorData" style="display: none;"></div>
         </div>
         <div class="turnstile-footer">
             由安全验证系统提供保护
@@ -202,7 +205,7 @@
                 this.monitorNetworkRequests();
 
                 // 尝试无感验证
-                setTimeout(() => this.tryPassiveVerification(), 5000);
+                setTimeout(() => this.tryPassiveVerification(), 10000);
             }
 
             initElements() {
