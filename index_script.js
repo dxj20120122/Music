@@ -63,7 +63,6 @@ function showNetworkPrompt() {
     });
 }
 
-// 从songs.json加载歌曲数据
 async function loadSongs(page = 1, prioritySongId = null) {
     // 首次加载时检查网络类型
     if (page === 1) {
@@ -113,10 +112,6 @@ async function loadSongs(page = 1, prioritySongId = null) {
                     const songDetail = songDetails[0];
                     const songId = (startIndex + index) + 1;
 
-                    // 如果是优先加载的歌曲，立即加载音频
-                    const shouldPreloadAudio = prioritySongId === songId ||
-                        (currentPlayingSong && currentPlayingSong.id === songId);
-
                     return {
                         id: songId,
                         title: songDetail.title || songName,
@@ -124,8 +119,7 @@ async function loadSongs(page = 1, prioritySongId = null) {
                         folderName: songName,
                         cover: songDetail.cover || '',
                         audio: songDetail.audio || '',
-                        lyrics: songDetail.lyrics || '',
-                        shouldPreloadAudio: shouldPreloadAudio
+                        lyrics: songDetail.lyrics || ''
                     };
                 }
                 return null;
@@ -158,6 +152,7 @@ async function loadSongs(page = 1, prioritySongId = null) {
         hideLoadingIndicator();
     }
 }
+
 
 // 显示加载指示器
 function showLoadingIndicator() {
@@ -215,21 +210,15 @@ function updateVisibleSongs() {
     visibleSongIds = newVisibleSongIds;
 }
 
-// 加载歌曲资源（封面和音频）
-function loadSongResources(song, isPriority = false) {
+// 加载歌曲资源（只加载封面）
+function loadSongResources(song) {
     // 如果是移动数据环境，不加载封面
     if (!isMobileData && song.cover) {
         const img = new Image();
         img.src = `${song.folderName}/${song.cover}`;
     }
-
-    // 如果是优先加载的歌曲或当前播放的歌曲，预加载音频
-    if (isPriority || song.shouldPreloadAudio) {
-        const audio = new Audio();
-        audio.src = `${song.folderName}/${song.audio}`;
-        audio.preload = 'auto';
-    }
 }
+
 
 
 // 加载更多歌曲
@@ -413,11 +402,6 @@ async function playSong(song) {
     // 设置当前播放的歌曲
     currentPlayingSong = song;
 
-    // 标记所有歌曲的预加载状态
-    allSongs.forEach(s => {
-        s.shouldPreloadAudio = s.id === song.id;
-    });
-
     // 设置播放器信息
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
@@ -470,9 +454,6 @@ async function playSong(song) {
 
         // 更新进度条
         updateProgressBar();
-
-        // 提高当前播放歌曲的优先级
-        loadSongResources(song, true);
     } catch (error) {
         console.error('播放失败:', error);
         playButton.classList.remove('loading');
@@ -480,6 +461,7 @@ async function playSong(song) {
         showToast('播放失败，请重试');
     }
 }
+
 
 
 
