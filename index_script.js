@@ -227,8 +227,10 @@ function loadSongResources(song, isPriority = false) {
     if (isPriority || song.shouldPreloadAudio) {
         const audio = new Audio();
         audio.src = `${song.folderName}/${song.audio}`;
+        audio.preload = 'auto';
     }
 }
+
 
 // 加载更多歌曲
 async function loadMoreSongs() {
@@ -403,20 +405,35 @@ function playSong(song) {
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
 
-    // 设置音频源 - 使用新的路径结构
-    audioElement.src = `${song.folderName}/${song.audio}`;
-
     // 显示播放器
     audioPlayer.classList.add('active');
+
+    // 显示加载状态
+    playButton.classList.add('loading');
+    
+    // 设置音频源
+    audioElement.src = `${song.folderName}/${song.audio}`;
+    
+    // 音频加载事件
+    audioElement.oncanplay = () => {
+        playButton.classList.remove('loading');
+    };
+    
+    audioElement.onerror = () => {
+        playButton.classList.remove('loading');
+        showToast('播放失败，请重试');
+    };
 
     // 播放音乐
     audioElement.play()
         .then(() => {
             playButton.innerHTML = '<i class="fas fa-pause"></i>';
+            playButton.classList.remove('loading');
         })
         .catch(error => {
             console.error('播放失败:', error);
-            alert('无法播放歌曲，请检查文件路径');
+            playButton.classList.remove('loading');
+            showToast('无法播放歌曲');
         });
 
     // 更新进度条
@@ -425,6 +442,7 @@ function playSong(song) {
     // 提高当前播放歌曲的优先级
     loadSongResources(song, true);
 }
+
 
 // 显示提示
 function showToast(message) {
