@@ -1,134 +1,24 @@
 // 定义全局变量
 let allSongs = [];
 let currentPage = 1;
-const songsPerPage = 30; // 每页加载的歌曲数量
+const songsPerPage = 10; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
-let visibleSongs = new Set(); // 存储当前可见区域的歌曲ID
-let currentPlayingSong = null; // 当前播放的歌曲
-let isMobileData = false; // 是否移动数据环境
 
-// 注册 Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('ServiceWorker 注册成功:', registration.scope);
-      })
-      .catch(error => {
-        console.log('ServiceWorker 注册失败:', error);
-      });
-  });
-}
-
-// 清除缓存功能
-document.getElementById('clearCacheButton').addEventListener('click', () => {
-  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-    // 显示确认对话框
-    const confirmed = confirm('确定要清除所有缓存数据吗？这可能会暂时影响应用性能。');
-    if (!confirmed) return;
-    
-    // 创建消息通道
-    const messageChannel = new MessageChannel();
-    
-    // 监听响应
-    messageChannel.port1.onmessage = (event) => {
-      if (event.data.success) {
-        showToast('缓存已清除');
-        // 可选：重新加载页面以获取最新资源
-        window.location.reload();
-      } else {
-        showToast('清除缓存失败: ' + (event.data.error || '未知错误'));
-      }
-    };
-    
-    // 发送清除缓存消息
-    navigator.serviceWorker.controller.postMessage(
-      { type: 'CLEAR_CACHE' },
-      [messageChannel.port2]
-    );
-  } else {
-    showToast('Service Worker 未激活，无法清除缓存');
-  }
-});
-
-// 检测网络类型并应用优化
-function checkNetworkType() {
+// 检测网络连接类型
+async function checkNetworkType() {
     if ('connection' in navigator) {
         const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        
-        // 检测是否移动数据
-        isMobileData = connection.effectiveType === 'cellular' || connection.type === 'cellular';
-        
-        if (isMobileData) {
-            console.log('移动数据环境 - 应用优化');
-            applyMobileDataOptimizations();
-            
-            // 询问用户是否加载全部
-            const userChoice = confirm('检测到您正在使用移动数据，是否要加载全部歌曲？点击"确定"加载全部，点击"取消"仅加载可视区域歌曲。');
+        if (connection.type === 'cellular') {
+            // 使用移动数据时询问用户
+            const userChoice = await showNetworkPrompt();
             autoLoadEnabled = userChoice;
-            
-            if (!userChoice) {
-                showToast('移动数据模式下仅加载可视区域歌曲');
-            }
         } else {
+            // WiFi或其他网络类型时自动加载
             autoLoadEnabled = true;
         }
     }
-}
-
-// 应用移动数据优化
-function applyMobileDataOptimizations() {
-    // 1. 强制列表视图
-    const listViewBtn = document.querySelector('.view-button[data-view="list"]');
-    if (listViewBtn && !listViewBtn.classList.contains('active')) {
-        listViewBtn.click();
-    }
-    
-    // 2. 添加移动数据专用样式
-    const existingStyle = document.getElementById('mobile-data-style');
-    if (!existingStyle) {
-        const style = document.createElement('style');
-        style.id = 'mobile-data-style';
-        style.textContent = `
-            .song-grid {
-                display: none !important;
-            }
-            .song-list {
-                display: block !important;
-            }
-            .song-card .song-image img {
-                display: none;
-            }
-            .text-cover {
-                display: flex !important;
-                align-items: center;
-                justify-content: center;
-                font-size: 24px;
-                font-weight: bold;
-                color: white;
-                width: 100%;
-                height: 100%;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // 3. 移除已加载的封面图片
-    document.querySelectorAll('.song-card img').forEach(img => {
-        if (!img.classList.contains('keep-image')) {
-            const parent = img.parentElement;
-            if (parent) {
-                const songTitle = parent.closest('.song-card')?.querySelector('.song-title')?.textContent || '';
-                const textCover = document.createElement('div');
-                textCover.className = 'text-cover';
-                textCover.textContent = songTitle.charAt(0);
-                parent.insertBefore(textCover, img);
-                img.remove();
-            }
-        }
-    });
 }
 
 // 显示网络提示对话框
@@ -268,13 +158,10 @@ function hideLoadingIndicator() {
 
 // 检查是否应该加载更多歌曲
 function checkScroll() {
-    // 如果禁用自动加载或没有更多歌曲可加载，则返回
-    if (!autoLoadEnabled || !hasMoreSongs) return;
-    
     const songGrid = document.getElementById('songGrid');
     const scrollPosition = window.innerHeight + window.scrollY;
     const pageHeight = document.documentElement.scrollHeight;
-    const threshold = isMobileData ? 1000 : 500; // 移动数据下提前更多加载
+    const threshold = 500; // 提前500px加载
     
     // 如果接近底部且有更多歌曲可加载，并且当前没有正在加载
     if (scrollPosition > pageHeight - threshold && !isLoading && hasMoreSongs) {
@@ -304,7 +191,6 @@ function displaySongs(songs) {
     // 如果是第一页，清空网格
     if (currentPage === 1) {
         songGrid.innerHTML = '';
-        visibleSongs.clear();
     }
     
     // 移除之前的加载指示器（如果有）
@@ -325,9 +211,6 @@ function displaySongs(songs) {
         card.className = 'song-card';
         card.dataset.id = song.id;
 
-        // 移动数据环境下不使用封面图片
-        const useCoverImage = song.cover && !isMobileData;
-        
         // 生成随机颜色渐变
         const colors = [
             'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
@@ -338,16 +221,27 @@ function displaySongs(songs) {
             'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)',
             'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
-            'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)'
+            'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)',
+            'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
+            'linear-gradient(135deg, #f9d423 0%, #ff4e50 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+            'linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%)',
+            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+            'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+            'linear-gradient(135deg, #a6c1ee 0%, #fbc2eb 100%)',
+            'linear-gradient(135deg, #ffc3a0 0%, #ffafbd 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #f9d423 0%, #ff4e50 100%)',
+            'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)'
         ];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
         card.innerHTML = `
-            <div class="song-image" style="${useCoverImage ? '' : `background: ${randomColor}`}">
-                ${useCoverImage ? 
-                    `<img src="" alt="${song.title}" loading="lazy" data-src="${song.folderName}/${song.cover}">` : 
-                    `<div class="text-cover">${song.title.charAt(0)}</div>`
-                }
+            <div class="song-image" style="${song.cover ? '' : `background: ${randomColor}`}">
+                ${song.cover ? `<img src="${song.folderName}/${song.cover}" alt="${song.title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;">` : song.title.charAt(0)}
                 <button class="play-button">
                     <i class="fas fa-play"></i>
                 </button>
@@ -364,26 +258,64 @@ function displaySongs(songs) {
             </div>
         `;
 
-        // 如果是移动数据环境且不是当前播放歌曲，延迟加载图片
-        if (isMobileData) {
-            const img = card.querySelector('img');
-            if (img) {
-                img.remove();
-                const textCover = card.querySelector('.text-cover') || 
-                    card.querySelector('.song-image').appendChild(document.createElement('div'));
-                textCover.className = 'text-cover';
-                textCover.textContent = song.title.charAt(0);
-            }
+        // 添加点击事件，播放歌曲预览
+        const playBtn = card.querySelector('.play-button');
+        playBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            playSong(song);
+        });
+
+        // 添加收藏按钮点击事件
+        const favoriteBtn = card.querySelector('.favorite-button');
+
+        // 从localStorage加载收藏状态
+        const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+        if (favorites[song.id]) {
+            favoriteBtn.classList.add('favorited');
+            favoriteBtn.querySelector('i').style.color = 'var(--primary-color)';
+            favoriteBtn.querySelector('i').style.webkitTextStroke = '0';
         }
 
-        // ...原有的点击事件监听代码保持不变...
-        
+        favoriteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isFavorited = favoriteBtn.classList.toggle('favorited');
+
+            // 更新本地存储
+            const favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+            favorites[song.id] = isFavorited;
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+
+            // 更新按钮样式
+            if (isFavorited) {
+                favoriteBtn.querySelector('i').style.color = 'var(--primary-color)';
+                favoriteBtn.querySelector('i').style.webkitTextStroke = '0';
+                showToast('已收藏');
+            } else {
+                favoriteBtn.querySelector('i').style.color = 'transparent';
+                favoriteBtn.querySelector('i').style.webkitTextStroke = '1px var(--primary-color)';
+                showToast('已取消收藏');
+            }
+        });
+
+        // 添加添加到歌单按钮点击事件
+        const addToPlaylistBtn = card.querySelector('.add-to-playlist-button');
+        addToPlaylistBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openAddToPlaylistModal(song);
+        });
+
+        // 点击卡片跳转到歌曲目录
+        card.addEventListener('click', () => {
+            window.location.href = `${song.folderName}/`;
+        });
+
         songGrid.appendChild(card);
     });
-    
-    // 设置IntersectionObserver
-    setupIntersectionObserver();
 }
+
 // 播放歌曲预览
 function playSong(song) {
     const audioPlayer = document.getElementById('audioPlayer');
@@ -392,9 +324,6 @@ function playSong(song) {
     const playerArtist = document.getElementById('playerArtist');
     const playButton = document.getElementById('playButton');
 
-    // 更新当前播放歌曲
-    currentPlayingSong = song;
-    
     // 设置播放器信息
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
@@ -405,9 +334,6 @@ function playSong(song) {
     // 显示播放器
     audioPlayer.classList.add('active');
 
-    // 更新优先级
-    prioritizeSongLoading(song.id);
-
     // 播放音乐
     audioElement.play()
         .then(() => {
@@ -415,81 +341,11 @@ function playSong(song) {
         })
         .catch(error => {
             console.error('播放失败:', error);
-            showToast('无法播放歌曲，请检查网络连接');
+            alert('无法播放歌曲，请检查文件路径');
         });
 
     // 更新进度条
     updateProgressBar();
-}
-
-// 歌曲加载优先级管理
-function prioritizeSongLoading(songId) {
-    const allCards = document.querySelectorAll('.song-card');
-    allCards.forEach(card => {
-        const id = card.dataset.id;
-        const img = card.querySelector('img');
-        
-        if (id === songId.toString()) {
-            // 当前播放歌曲 - 最高优先级
-            if (img) {
-                img.loading = 'eager';
-                // 如果是移动数据环境，确保图片加载
-                if (isMobileData && !img.src) {
-                    const song = allSongs.find(s => s.id == id);
-                    if (song && song.cover) {
-                        img.src = `${song.folderName}/${song.cover}`;
-                    }
-                }
-            }
-        } else if (visibleSongs.has(id)) {
-            // 可视区域歌曲 - 中等优先级
-            if (img) img.loading = 'lazy';
-        } else {
-            // 其他歌曲 - 低优先级
-            if (img) img.loading = 'lazy';
-        }
-    });
-}
-
-// 设置IntersectionObserver监听可视区域
-function setupIntersectionObserver() {
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const songId = entry.target.dataset.id;
-            
-            if (entry.isIntersecting) {
-                visibleSongs.add(songId);
-                
-                // 如果是移动数据环境，延迟加载图片
-                if (isMobileData) {
-                    const img = entry.target.querySelector('img');
-                    if (img && !img.src) {
-                        const song = allSongs.find(s => s.id == songId);
-                        if (song && song.cover) {
-                            setTimeout(() => {
-                                img.src = `${song.folderName}/${song.cover}`;
-                            }, 500);
-                        }
-                    }
-                }
-            } else {
-                visibleSongs.delete(songId);
-            }
-        });
-        
-        // 更新加载优先级
-        if (currentPlayingSong) {
-            prioritizeSongLoading(currentPlayingSong.id);
-        }
-    }, {
-        threshold: 0.1,
-        rootMargin: '200px 0px 200px 0px' // 提前200px加载
-    });
-
-    // 观察所有歌曲卡片
-    document.querySelectorAll('.song-card').forEach(card => {
-        observer.observe(card);
-    });
 }
 
 // 显示提示
@@ -1272,14 +1128,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
 
     document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
-    // 检测网络类型
-    checkNetworkType();
-    
-    // 监听网络变化
-    if ('connection' in navigator) {
-        navigator.connection.addEventListener('change', checkNetworkType);
-    }
 
     // 初始化播放器控制
     initPlayerControls();
