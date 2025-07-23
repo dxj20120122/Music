@@ -1,7 +1,7 @@
 // 定义全局变量
 let allSongs = [];
 let currentPage = 1;
-const songsPerPage = 50; // 每页加载的歌曲数量
+const songsPerPage = 500; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
@@ -366,13 +366,14 @@ function displaySongs(songs) {
 
         songGrid.appendChild(card);
 
-        // 加载歌曲资源
-        loadSongResources(song, song.shouldPreloadAudio);
+        // 加载歌曲封面资源
+        loadSongResources(song);
     });
 
     // 更新可见区域歌曲
     updateVisibleSongs();
 }
+
 
 // 播放歌曲预览
 async function playSong(song) {
