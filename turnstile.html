@@ -167,16 +167,13 @@
         </div>
         <div class="turnstile-body">
             <p class="turnstile-message">请确认您不是机器人</p>
-            <p class="turnstile-message">采用无感刷新认证模式</p>
             <h2 class="turnstile-message" style="font-weight: 900;">现在请你轻晃鼠标<br>或<br>多次在不同位置点击屏幕</h2>
-            <p  class="turnstile-message">请需稍作等待</p>
-            <p class="turnstile-message">长时间未跳转请刷新再次尝试</p>
-            <input type="text" class="turnstile-input" id="humanInput" placeholder="输入“我不是机器人”以验证" style="display: none;"/>
-            <button class="turnstile-button" id="verifyButton" style="display: none;">验证</button>
-            <div class="turnstile-loading" id="loadingIndicator" style="display: none;"></div>
-            <p class="turnstile-success" id="successMessage" style="display: none;">验证成功！正在加载内容...</p>
-            <p class="turnstile-error" id="errorMessage" style="display: none;">验证失败，请重试</p>
-            <div class="turnstile-behavior-data" id="behaviorData" style="display: none;"></div>
+            <input type="text" class="turnstile-input" id="humanInput" placeholder="输入“我不是机器人”以验证"/>
+            <button class="turnstile-button" id="verifyButton">验证</button>
+            <div class="turnstile-loading" id="loadingIndicator"></div>
+            <p class="turnstile-success" id="successMessage">验证成功！正在加载内容...</p>
+            <p class="turnstile-error" id="errorMessage">验证失败，请重试</p>
+            <div class="turnstile-behavior-data" id="behaviorData"></div>
         </div>
         <div class="turnstile-footer">
             由安全验证系统提供保护
