@@ -1,7 +1,7 @@
 // 定义全局变量
 let allSongs = [];
 let currentPage = 1;
-const songsPerPage = 10; // 每页加载的歌曲数量
+const songsPerPage = 50; // 每页加载的歌曲数量
 let isLoading = false;
 let hasMoreSongs = true;
 let autoLoadEnabled = true; // 控制是否自动加载歌曲
