@@ -2,7 +2,7 @@
     // 配置
     const config = {
         allowedOrigins: [
-            window.location.origin // 允许当前域作为合法域名
+            '*' // 允许所有来源
         ],
         iframeSrc: './turnstile.html', // 使用相对路径
         verificationTimeout: 300000 // 5分钟验证超时
