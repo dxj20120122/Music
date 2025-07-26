@@ -9,6 +9,11 @@ let isMobileData = false; // 是否移动数据环境
 let currentPlayingSong = null; // 当前播放的歌曲
 let visibleSongIds = new Set(); // 当前可见区域的歌曲ID
 
+// 灵动岛
+let playingPlaylist = [];
+let currentSongIndex = -1;
+let isPlaying = false;
+
 // 检测网络连接类型
 async function checkNetworkType() {
     if ('connection' in navigator) {
@@ -317,7 +322,7 @@ async function playSong(song) {
     // 设置播放器信息
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
-    
+
     // 更新页面标题
     document.title = `${song.title}`;
 
@@ -1224,4 +1229,474 @@ document.addEventListener('DOMContentLoaded', async function () {
             button.querySelector('i').style.webkitTextStroke = '0';
         }
     });
+
+
+    // ==================== 灵动岛功能完整实现 ====================
+
+// 灵动岛功能 - 改进版
+const dynamicIsland = document.getElementById('dynamicIsland');
+const islandContent = document.getElementById('islandContent');
+const islandControls = document.getElementById('islandControls');
+const islandPrev = document.getElementById('islandPrev');
+const islandPlay = document.getElementById('islandPlay');
+const islandNext = document.getElementById('islandNext');
+const waveContainer = document.getElementById('waveContainer');
+const islandProgress = document.getElementById('islandProgress');
+
+// 状态变量
+let isDragging = false;
+let startX, startY, startLeft, startTop;
+let longPressTimer;
+let isExpanded = false;
+let isHovering = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+let currentPlayingSong = null;
+let playingPlaylist = [];
+let currentSongIndex = -1;
+let isPlaying = false;
+let lastTapTime = 0;
+let tapCount = 0;
+let tapTimeout;
+
+// 初始化灵动岛
+function initDynamicIsland() {
+    // 初始位置
+    resetIslandPosition();
+    
+    // 事件监听
+    setupEventListeners();
+    
+    // 初始状态
+    waveContainer.style.display = 'flex';
+    islandProgress.style.width = '0%';
+    
+    // 添加触摸反馈
+    addRippleEffect();
+}
+
+// 添加点击涟漪效果
+function addRippleEffect() {
+    dynamicIsland.addEventListener('click', function(e) {
+        const rect = dynamicIsland.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const ripple = document.createElement('span');
+        ripple.classList.add('ripple');
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        dynamicIsland.appendChild(ripple);
+        
+        setTimeout(() => {
+            ripple.remove();
+        }, 600);
+    });
+}
+
+// 重置位置到屏幕顶部中央
+function resetIslandPosition() {
+    dynamicIsland.style.left = '50%';
+    dynamicIsland.style.top = '12px';
+    dynamicIsland.style.transform = 'translateX(-50%)';
+}
+
+// 设置事件监听
+function setupEventListeners() {
+    // 鼠标悬停
+    dynamicIsland.addEventListener('mouseenter', handleMouseEnter);
+    dynamicIsland.addEventListener('mouseleave', handleMouseLeave);
+    
+    // 触摸事件
+    dynamicIsland.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    document.addEventListener('touchend', handleTouchEnd);
+    
+    // 鼠标事件
+    dynamicIsland.addEventListener('mousedown', handleMouseDown);
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    
+    // 双击/双触事件
+    dynamicIsland.addEventListener('click', handleTap);
+    
+    // 控制按钮
+    islandPrev.addEventListener('click', handlePrevClick);
+    islandPlay.addEventListener('click', handlePlayClick);
+    islandNext.addEventListener('click', handleNextClick);
+    
+    // 音频事件
+    const audioElement = document.getElementById('audioElement');
+    audioElement.addEventListener('play', handleAudioPlay);
+    audioElement.addEventListener('pause', handleAudioPause);
+    audioElement.addEventListener('ended', handleAudioEnded);
+    audioElement.addEventListener('timeupdate', handleTimeUpdate);
+    
+    // 窗口大小变化
+    window.addEventListener('resize', handleWindowResize);
+}
+
+// 播放控制函数
+function playPrev() {
+    if (playingPlaylist.length === 0) return;
+    currentSongIndex = (currentSongIndex - 1 + playingPlaylist.length) % playingPlaylist.length;
+    playSong(playingPlaylist[currentSongIndex]);
+    
+    // 添加切换动画
+    animateIslandSwitch();
+}
+
+function playNext() {
+    if (playingPlaylist.length === 0) return;
+    currentSongIndex = (currentSongIndex + 1) % playingPlaylist.length;
+    playSong(playingPlaylist[currentSongIndex]);
+    
+    // 添加切换动画
+    animateIslandSwitch();
+}
+
+function togglePlayPause() {
+    const audioElement = document.getElementById('audioElement');
+    if (audioElement.paused) {
+        audioElement.play().catch(e => console.error('播放失败:', e));
+    } else {
+        audioElement.pause();
+    }
+    
+    // 添加点击反馈
+    animateButtonPress(islandPlay);
+}
+
+// 按钮点击动画
+function animateButtonPress(button) {
+    button.style.transform = 'scale(0.9)';
+    setTimeout(() => {
+        button.style.transform = 'scale(1)';
+    }, 100);
+}
+
+// 歌曲切换动画
+function animateIslandSwitch() {
+    dynamicIsland.classList.add('minimized');
+    setTimeout(() => {
+        dynamicIsland.classList.remove('minimized');
+        updateIslandContent();
+    }, 300);
+}
+
+// 边界检查
+function checkBoundaries() {
+    const rect = dynamicIsland.getBoundingClientRect();
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    
+    let left = parseInt(dynamicIsland.style.left);
+    let top = parseInt(dynamicIsland.style.top);
+    
+    // 水平边界
+    if (left < rect.width / 2) left = rect.width / 2;
+    if (left > windowWidth - rect.width / 2) left = windowWidth - rect.width / 2;
+    
+    // 垂直边界
+    if (top < 10) top = 10;
+    if (top > windowHeight - rect.height / 2) top = windowHeight - rect.height / 2;
+    
+    dynamicIsland.style.left = `${left}px`;
+    dynamicIsland.style.top = `${top}px`;
+}
+
+// 事件处理函数
+function handleMouseEnter() {
+    if (!isExpanded && !isDragging) {
+        isHovering = true;
+        dynamicIsland.style.transform = `translateX(-50%) scale(1.05)`;
+    }
+}
+
+function handleMouseLeave() {
+    if (isHovering && !isExpanded) {
+        dynamicIsland.style.transform = `translateX(-50%) scale(1)`;
+    }
+    isHovering = false;
+}
+
+function handleTouchStart(e) {
+    if (isExpanded) return;
+    
+    isDragging = true;
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
+    
+    // 获取当前位置
+    const rect = dynamicIsland.getBoundingClientRect();
+    dragOffsetX = startX - rect.left;
+    dragOffsetY = startY - rect.top;
+    
+    // 长按计时器
+    longPressTimer = setTimeout(() => {
+        expandIsland();
+    }, 50);
+    
+    e.preventDefault();
+}
+
+function handleTouchMove(e) {
+    if (!isDragging) return;
+    
+    clearTimeout(longPressTimer);
+    
+    const touch = e.touches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+    
+    // 更新位置
+    dynamicIsland.style.left = `${touch.clientX - dragOffsetX + dynamicIsland.offsetWidth / 2}px`;
+    dynamicIsland.style.top = `${touch.clientY - dragOffsetY + dynamicIsland.offsetHeight / 2}px`;
+    dynamicIsland.style.transform = 'none';
+    
+    checkBoundaries();
+    e.preventDefault();
+}
+
+function handleTouchEnd() {
+    if (isDragging) {
+        isDragging = false;
+        clearTimeout(longPressTimer);
+    }
+}
+
+function handleMouseDown(e) {
+    if (isExpanded) return;
+    
+    isDragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    // 获取当前位置
+    const rect = dynamicIsland.getBoundingClientRect();
+    dragOffsetX = startX - rect.left;
+    dragOffsetY = startY - rect.top;
+    
+    document.getElementById('dynamicIsland').addEventListener('mouseover', function() {
+        expandIsland();
+    });
+
+    // 长按计时器
+    longPressTimer = setTimeout(() => {
+        expandIsland();
+    }, 50);
+    
+    e.preventDefault();
+}
+
+function handleMouseMove(e) {
+    if (!isDragging) return;
+    
+    clearTimeout(longPressTimer);
+    
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    
+    // 更新位置
+    dynamicIsland.style.left = `${e.clientX - dragOffsetX + dynamicIsland.offsetWidth / 2}px`;
+    dynamicIsland.style.top = `${e.clientY - dragOffsetY + dynamicIsland.offsetHeight / 2}px`;
+    dynamicIsland.style.transform = 'none';
+    
+    checkBoundaries();
+}
+
+function handleMouseUp() {
+    if (isDragging) {
+        isDragging = false;
+        clearTimeout(longPressTimer);
+    }
+}
+
+// 处理点击/触摸事件
+function handleTap(e) {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+    
+    if (tapLength < 300 && tapLength > 0) {
+        // 双击处理
+        tapCount++;
+        clearTimeout(tapTimeout);
+        
+        if (tapCount === 1) {
+            // 双击展开/收起
+            if (isExpanded) {
+                collapseIsland();
+            } else {
+                expandIsland();
+            }
+        }
+    } else {
+        tapCount = 0;
+    }
+    
+    lastTapTime = currentTime;
+    
+    tapTimeout = setTimeout(() => {
+        tapCount = 0;
+    }, 300);
+}
+
+function handlePrevClick(e) {
+    e.stopPropagation();
+    playPrev();
+    animateButtonPress(islandPrev);
+}
+
+function handlePlayClick(e) {
+    e.stopPropagation();
+    togglePlayPause();
+    animateButtonPress(islandPlay);
+}
+
+function handleNextClick(e) {
+    e.stopPropagation();
+    playNext();
+    animateButtonPress(islandNext);
+}
+
+function handleAudioPlay() {
+    updatePlayState(true);
+    dynamicIsland.classList.add('playing');
+}
+
+function handleAudioPause() {
+    updatePlayState(false);
+    dynamicIsland.classList.remove('playing');
+}
+
+function handleAudioEnded() {
+    updatePlayState(false);
+    if (playingPlaylist.length > 0) {
+        playNext();
+    } else {
+        dynamicIsland.classList.remove('active', 'playing');
+    }
+}
+
+function handleTimeUpdate() {
+    const audioElement = document.getElementById('audioElement');
+    if (currentPlayingSong) {
+        updateProgress(audioElement.currentTime, audioElement.duration);
+    }
+}
+
+function handleWindowResize() {
+    if (!isDragging) {
+        resetIslandPosition();
+    }
+}
+
+// 展开/收起灵动岛
+function expandIsland() {
+    if (isExpanded) return;
+    
+    isExpanded = true;
+    dynamicIsland.classList.add('expanded');
+    
+    // 600秒后自动收起
+    const autoCollapseTimer = setTimeout(() => {
+        if (!dynamicIsland.matches(':hover')) {
+            collapseIsland();
+        }
+    }, 600000);
+    
+    // 鼠标离开时收起
+    dynamicIsland.addEventListener('mouseleave', function onLeave() {
+        collapseIsland();
+        dynamicIsland.removeEventListener('mouseleave', onLeave);
+        clearTimeout(autoCollapseTimer);
+    }, { once: true });
+}
+
+function collapseIsland() {
+    if (!isExpanded) return;
+    
+    isExpanded = false;
+    dynamicIsland.classList.remove('expanded');
+    
+    // 重置位置到屏幕顶部中央
+    if (!isDragging) {
+        resetIslandPosition();
+    }
+}
+
+// 更新播放状态
+function updatePlayState(playing) {
+    isPlaying = playing;
+    const icon = islandPlay.querySelector('i');
+    icon.className = playing ? 'fas fa-pause' : 'fas fa-play';
+    
+    if (playing) {
+        waveContainer.style.display = 'flex';
+    } else {
+        waveContainer.style.display = 'none';
+    }
+    
+    // 同步主播放按钮
+    const mainPlayButton = document.getElementById('playButton');
+    if (mainPlayButton) {
+        mainPlayButton.innerHTML = playing ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+    }
+}
+
+// 更新进度条
+function updateProgress(currentTime, duration) {
+    if (duration > 0) {
+        const progress = (currentTime / duration) * 100;
+        islandProgress.style.width = `${progress}%`;
+    }
+}
+
+// 更新灵动岛内容
+function updateIslandContent() {
+    if (currentPlayingSong) {
+        islandContent.textContent = `${currentPlayingSong.title} · ${currentPlayingSong.artist}`;
+    }
+}
+
+// 初始化
+initDynamicIsland();
+
+// 暴露播放控制函数到全局
+window.playSong = function(song) {
+    if (!song) return;
+
+    // 更新当前播放列表和索引
+    const songGrid = document.getElementById('songGrid');
+    playingPlaylist = Array.from(songGrid.querySelectorAll('.song-card')).map(card => {
+        const id = parseInt(card.dataset.id);
+        return allSongs.find(s => s.id === id);
+    }).filter(Boolean);
+    
+    currentSongIndex = playingPlaylist.findIndex(s => s && s.id === song.id);
+    currentPlayingSong = song;
+
+    // 设置音频源
+    const audioElement = document.getElementById('audioElement');
+    audioElement.src = `${song.folderName}/${song.audio}`;
+    audioElement.play()
+        .then(() => {
+            document.title = `${song.title}`;
+
+            // 显示灵动岛
+            dynamicIsland.classList.add('active');
+            updateIslandContent();
+            updatePlayState(true);
+            
+            // 更新主播放器状态
+            document.getElementById('playerTitle').textContent = song.title;
+            document.getElementById('playerArtist').textContent = song.artist;
+            document.getElementById('audioPlayer').classList.add('active');
+        })
+        .catch(error => {
+            console.error('播放失败:', error);
+            updatePlayState(false);
+        });
+};
 });

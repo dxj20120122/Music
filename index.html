@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -32,7 +31,7 @@
         <div class="header-center">
             <span>
                 页面加载请不要操作
-                <br> 
+                <br>
                 听音乐不要重复点击
             </span>
         </div>
@@ -225,11 +224,39 @@
         <audio id="audioElement"></audio>
     </div>
 
+
+    <div class="dynamic-island" id="dynamicIsland">
+        <div class="island-content" id="islandContent"></div>
+        <div class="island-controls" id="islandControls">
+            <button class="island-control-button" id="islandPrev">
+                <i class="fas fa-step-backward"></i>
+            </button>
+            <button class="island-control-button" id="islandPlay">
+                <i class="fas fa-play"></i>
+            </button>
+            <button class="island-control-button" id="islandNext">
+                <i class="fas fa-step-forward"></i>
+            </button>
+        </div>
+        <div class="wave-container" id="waveContainer">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+        </div>
+        <div class="island-progress" id="islandProgress"></div>
+    </div>
+
+
+
     <script src="index_script.js"></script>
 
 </body>
 
-<script src="https://cvii.dpdns.org/index.js"></script>
+<!-- <script src="https://cvii.dpdns.org/index.js"></script> -->
 
 
 
