@@ -30,15 +30,15 @@
     container.style.zIndex = '9999';
     container.style.display = 'none';
     
-    // 创建iframe
+    // 创建iframe - 修改部分
     const iframe = document.createElement('iframe');
     iframe.src = config.iframeSrc;
     iframe.style.border = 'none';
     iframe.style.width = '320px';
     iframe.style.height = '550px';
     iframe.style.borderRadius = '8px';
-    iframe.allow = 'accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking';
-    iframe.sandbox = 'allow-scripts allow-forms';
+    iframe.allow = 'accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking; webgl';
+    iframe.sandbox = 'allow-scripts allow-same-origin allow-forms';
     
     container.appendChild(iframe);
     document.body.appendChild(container);
