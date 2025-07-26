@@ -1231,9 +1231,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
 
 
-    // ==================== 灵动岛功能完整实现 ====================
+// ==================== 灵动岛功能完整实现 ====================
 
-// 灵动岛功能 - 改进版
+// 获取DOM元素
 const dynamicIsland = document.getElementById('dynamicIsland');
 const islandContent = document.getElementById('islandContent');
 const islandControls = document.getElementById('islandControls');
@@ -1258,6 +1258,7 @@ let isPlaying = false;
 let lastTapTime = 0;
 let tapCount = 0;
 let tapTimeout;
+let waveAnimationInterval;
 
 // 初始化灵动岛
 function initDynamicIsland() {
@@ -1273,6 +1274,43 @@ function initDynamicIsland() {
     
     // 添加触摸反馈
     addRippleEffect();
+    
+    // 初始化波形动画
+    initWaveAnimation();
+
+    document.getElementById('dynamicIsland').addEventListener('mouseover', function() {
+        expandIsland();
+    });
+}
+
+// 初始化波形动画
+function initWaveAnimation() {
+    // 清空现有波形条
+    waveContainer.innerHTML = '';
+    
+    // 创建7个波形条
+    for (let i = 0; i < 7; i++) {
+        const waveBar = document.createElement('div');
+        waveBar.className = 'wave-bar';
+        waveContainer.appendChild(waveBar);
+    }
+}
+
+// 启动波形动画
+function startWaveAnimation() {
+    const waveBars = document.querySelectorAll('.wave-bar');
+    waveBars.forEach((bar, index) => {
+        const delay = index * 0.1;
+        bar.style.animation = `wave 1.4s ease-in-out ${delay}s infinite`;
+    });
+}
+
+// 停止波形动画
+function stopWaveAnimation() {
+    const waveBars = document.querySelectorAll('.wave-bar');
+    waveBars.forEach(bar => {
+        bar.style.animation = 'none';
+    });
 }
 
 // 添加点击涟漪效果
@@ -1286,6 +1324,11 @@ function addRippleEffect() {
         ripple.classList.add('ripple');
         ripple.style.left = `${x}px`;
         ripple.style.top = `${y}px`;
+        
+        // 随机颜色变化
+        const hue = Math.floor(Math.random() * 60) + 200; // 蓝色调范围
+        ripple.style.backgroundColor = `hsla(${hue}, 80%, 70%, 0.3)`;
+        
         dynamicIsland.appendChild(ripple);
         
         setTimeout(() => {
@@ -1358,13 +1401,24 @@ function playNext() {
 function togglePlayPause() {
     const audioElement = document.getElementById('audioElement');
     if (audioElement.paused) {
-        audioElement.play().catch(e => console.error('播放失败:', e));
+        audioElement.play().catch(e => {
+            console.error('播放失败:', e);
+            animatePlayError();
+        });
     } else {
         audioElement.pause();
     }
     
     // 添加点击反馈
     animateButtonPress(islandPlay);
+}
+
+// 播放错误动画
+function animatePlayError() {
+    dynamicIsland.style.animation = 'shake 0.5s ease-in-out';
+    setTimeout(() => {
+        dynamicIsland.style.animation = '';
+    }, 500);
 }
 
 // 按钮点击动画
@@ -1377,10 +1431,19 @@ function animateButtonPress(button) {
 
 // 歌曲切换动画
 function animateIslandSwitch() {
+    // 缩小动画
     dynamicIsland.classList.add('minimized');
+    
+    // 更新内容
     setTimeout(() => {
-        dynamicIsland.classList.remove('minimized');
         updateIslandContent();
+        dynamicIsland.classList.remove('minimized');
+        
+        // 内容切换动画
+        islandContent.style.animation = 'songSwitchIn 0.4s ease-out';
+        setTimeout(() => {
+            islandContent.style.animation = '';
+        }, 400);
     }, 300);
 }
 
@@ -1436,7 +1499,7 @@ function handleTouchStart(e) {
     // 长按计时器
     longPressTimer = setTimeout(() => {
         expandIsland();
-    }, 50);
+    }, 500);
     
     e.preventDefault();
 }
@@ -1478,14 +1541,10 @@ function handleMouseDown(e) {
     dragOffsetX = startX - rect.left;
     dragOffsetY = startY - rect.top;
     
-    document.getElementById('dynamicIsland').addEventListener('mouseover', function() {
-        expandIsland();
-    });
-
     // 长按计时器
     longPressTimer = setTimeout(() => {
         expandIsland();
-    }, 50);
+    }, 500);
     
     e.preventDefault();
 }
@@ -1563,11 +1622,13 @@ function handleNextClick(e) {
 function handleAudioPlay() {
     updatePlayState(true);
     dynamicIsland.classList.add('playing');
+    startWaveAnimation();
 }
 
 function handleAudioPause() {
     updatePlayState(false);
     dynamicIsland.classList.remove('playing');
+    stopWaveAnimation();
 }
 
 function handleAudioEnded() {
@@ -1630,12 +1691,17 @@ function collapseIsland() {
 function updatePlayState(playing) {
     isPlaying = playing;
     const icon = islandPlay.querySelector('i');
-    icon.className = playing ? 'fas fa-pause' : 'fas fa-play';
     
     if (playing) {
+        icon.className = 'fas fa-pause';
+        icon.style.animation = 'playPauseTransition 0.3s ease-out';
         waveContainer.style.display = 'flex';
+        startWaveAnimation();
     } else {
+        icon.className = 'fas fa-play';
+        icon.style.animation = '';
         waveContainer.style.display = 'none';
+        stopWaveAnimation();
     }
     
     // 同步主播放按钮
@@ -1659,9 +1725,6 @@ function updateIslandContent() {
         islandContent.textContent = `${currentPlayingSong.title} · ${currentPlayingSong.artist}`;
     }
 }
-
-// 初始化
-initDynamicIsland();
 
 // 暴露播放控制函数到全局
 window.playSong = function(song) {
@@ -1693,10 +1756,17 @@ window.playSong = function(song) {
             document.getElementById('playerTitle').textContent = song.title;
             document.getElementById('playerArtist').textContent = song.artist;
             document.getElementById('audioPlayer').classList.add('active');
+            
+            // 添加歌曲切换动画
+            animateIslandSwitch();
         })
         .catch(error => {
             console.error('播放失败:', error);
             updatePlayState(false);
+            animatePlayError();
         });
 };
+
+// 初始化灵动岛
+initDynamicIsland();
 });
