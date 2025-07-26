@@ -298,6 +298,7 @@ async function playSong(song) {
             try {
                 await audioElement.play();
                 playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                document.title = `${song.title}`; // 更新标题
             } catch (error) {
                 console.error('播放失败:', error);
                 showToast('播放失败，请重试');
@@ -305,6 +306,7 @@ async function playSong(song) {
         } else {
             audioElement.pause();
             playButton.innerHTML = '<i class="fas fa-play"></i>';
+            document.title = 'Simple - 免费音乐'; // 恢复默认标题
         }
         return;
     }
@@ -315,6 +317,9 @@ async function playSong(song) {
     // 设置播放器信息
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
+    
+    // 更新页面标题
+    document.title = `${song.title}`;
 
     // 显示播放器
     audioPlayer.classList.add('active');
@@ -368,9 +373,11 @@ async function playSong(song) {
         console.error('播放失败:', error);
         playButton.classList.remove('loading');
         playButton.innerHTML = '<i class="fas fa-play"></i>';
+        document.title = 'Simple - 免费音乐'; // 播放失败恢复默认标题
         showToast('播放失败，请重试');
     }
 }
+
 
 
 
@@ -475,6 +482,7 @@ function initPlayerControls() {
         audioElement.play()
             .then(() => {
                 playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                document.title = `${song.title}`; // 更新标题
             })
             .catch(error => {
                 console.error('播放失败:', error);
@@ -508,6 +516,9 @@ function initPlayerControls() {
             audioElement.play()
                 .then(() => {
                     playButton.innerHTML = '<i class="fas fa-pause"></i>';
+                    if (currentPlayingSong) {
+                        document.title = `${currentPlayingSong.title}`;
+                    }
                 })
                 .catch(error => {
                     console.error('播放失败:', error);
@@ -515,6 +526,7 @@ function initPlayerControls() {
         } else {
             audioElement.pause();
             playButton.innerHTML = '<i class="fas fa-play"></i>';
+            document.title = 'Simple - 免费音乐';
         }
     });
 
@@ -525,7 +537,14 @@ function initPlayerControls() {
     nextButton.addEventListener('click', playNext);
 
     // 歌曲结束时自动播放下一首
-    audioElement.addEventListener('ended', playNext);
+    audioElement.addEventListener('ended', () => {
+        if (playingPlaylist.length > 0) {
+            playNext();
+        } else {
+            document.title = 'Simple - 免费音乐';
+            playButton.innerHTML = '<i class="fas fa-play"></i>';
+        }
+    });
 
     // 进度条更新
     audioElement.addEventListener('timeupdate', () => {
@@ -545,7 +564,15 @@ function initPlayerControls() {
         const pos = (e.clientX - rect.left) / rect.width;
         audioElement.currentTime = pos * audioElement.duration;
     });
+
+    // 处理音频错误
+    audioElement.addEventListener('error', () => {
+        document.title = 'Simple - 免费音乐';
+        playButton.innerHTML = '<i class="fas fa-play"></i>';
+        showToast('播放出错，请重试');
+    });
 }
+
 
 // 初始化收藏弹窗功能
 function initFavoritesModal() {
