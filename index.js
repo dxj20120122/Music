@@ -37,8 +37,8 @@
     iframe.style.width = '320px';
     iframe.style.height = '550px';
     iframe.style.borderRadius = '8px';
-    iframe.allow = 'accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking';
-    iframe.sandbox = 'allow-scripts allow-same-origin allow-forms';
+    iframe.allow = 'accelerometer; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; xr-spatial-tracking';
+    iframe.sandbox = 'allow-scripts allow-forms';
     
     container.appendChild(iframe);
     document.body.appendChild(container);

@@ -260,7 +260,7 @@
             <div class="turnstile-behavior-data" id="behaviorData"></div>
         </div>
         <div class="turnstile-footer">
-            由安全验证系统提供保护
+            由免费公益安全验证系统提供保护
         </div>
     </div>
 
@@ -304,21 +304,22 @@
                 this.puzzleSuccess = document.getElementById('puzzleSuccess');
             }
 
+            // 修改setupEventListeners方法
             setupEventListeners() {
                 // 点击跟踪
                 document.addEventListener('click', (e) => {
                     this.recordTap(e);
-                });
+                }, { passive: true });
 
                 // 鼠标移动跟踪
                 document.addEventListener('mousemove', (e) => {
                     this.recordMovement(e);
-                });
+                }, { passive: true });
 
                 // 验证按钮点击
                 this.verifyButton.addEventListener('click', () => {
                     this.startVerification();
-                });
+                }, { passive: true });
 
                 // 拼图滑块事件
                 this.sliderThumb.addEventListener('mousedown', (e) => {
@@ -329,32 +330,33 @@
                     if (this.isDragging) {
                         this.dragSlider(e);
                     }
-                });
+                }, { passive: true });
 
                 document.addEventListener('mouseup', () => {
                     if (this.isDragging) {
                         this.endDrag();
                     }
-                });
+                }, { passive: true });
 
                 // 触摸事件支持
                 this.sliderThumb.addEventListener('touchstart', (e) => {
                     this.startDrag(e.touches[0]);
-                });
+                }, { passive: true });
 
                 document.addEventListener('touchmove', (e) => {
                     if (this.isDragging) {
                         e.preventDefault();
                         this.dragSlider(e.touches[0]);
                     }
-                });
+                }, { passive: false }); // 这里需要阻止默认行为
 
                 document.addEventListener('touchend', () => {
                     if (this.isDragging) {
                         this.endDrag();
                     }
-                });
+                }, { passive: true });
             }
+
 
             recordTap(e) {
                 const now = Date.now();
