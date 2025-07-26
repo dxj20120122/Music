@@ -72,11 +72,6 @@
     
     // 严格的消息监听
     window.addEventListener('message', function(e) {
-        // 验证消息来源
-        if (!config.allowedOrigins.includes(e.origin)) {
-            console.warn('收到来自未授权域的消息:', e.origin);
-            return;
-        }
         
         // 验证消息结构
         if (e.data && typeof e.data === 'object' && 
